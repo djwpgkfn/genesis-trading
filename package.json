@@ -1,0 +1,43 @@
+{
+  "name": "genesis-trading",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Genesis Coin Trading System — implementation baseline (S0 Repository Foundation)",
+  "workspaces": [
+    "contracts",
+    "packages/*",
+    "tools/*",
+    "apps/*"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "contract:validate": "node tools/contract-validate/dist/index.js",
+    "invariant:validate": "node dist/invariant-validate.js",
+    "ci": "npm run build && npm run lint && npm run format:check && npm run contract:validate && npm run invariant:validate && npm test",
+    "fix": "prettier --write . && eslint . --ext .ts --fix",
+    "start": "node dist/main.js",
+    "dev": "tsc -b && node dist/main.js",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^20.0.0",
+    "typescript-eslint": "^8.0.0",
+    "@vitest/coverage-v8": "^2.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

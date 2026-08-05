@@ -1,0 +1,68 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./contracts"
+    },
+    {
+      "path": "./packages/invariant-runner"
+    },
+    {
+      "path": "./tools/contract-validate"
+    },
+    {
+      "path": "./packages/data-layer"
+    },
+    {
+      "path": "./packages/feature-store"
+    },
+    {
+      "path": "./packages/event-engine"
+    },
+    {
+      "path": "./packages/replay-engine"
+    },
+    {
+      "path": "./packages/research-platform"
+    },
+    {
+      "path": "./packages/risk-engine"
+    },
+    {
+      "path": "./packages/portfolio-engine"
+    },
+    {
+      "path": "./packages/production-engine"
+    },
+    {
+      "path": "./packages/ai-layer"
+    },
+    {
+      "path": "./packages/presentation"
+    },
+    {
+      "path": "./packages/adapters-upbit"
+    },
+    {
+      "path": "./packages/adapters-db"
+    },
+    {
+      "path": "./packages/ops"
+    },
+    {
+      "path": "./src"
+    },
+    {
+      "path": "./packages/signal-engine"
+    },
+    {
+      "path": "./packages/strategy-engine"
+    },
+    {
+      "path": "./packages/decision-engine"
+    },
+    {
+      "path": "./packages/runtime"
+    }
+  ]
+}

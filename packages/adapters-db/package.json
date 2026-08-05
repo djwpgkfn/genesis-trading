@@ -1,0 +1,19 @@
+{
+  "name": "@genesis/adapters-db",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@genesis/data-layer": "*",
+    "@genesis/contracts": "*",
+    "pg": "^8.12.0",
+    "@clickhouse/client": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0"
+  }
+}

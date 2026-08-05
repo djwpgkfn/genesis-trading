@@ -1,0 +1,5 @@
+{
+  "environment": "development",
+  "timezone": "Asia/Seoul",
+  "$comment": "No secrets in VCS. Secrets via env/secret store (S0 rule). Storage tech chosen in S1."
+}
