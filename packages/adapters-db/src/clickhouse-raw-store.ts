@@ -5,10 +5,7 @@ import type { AsyncRawStore } from './types.js';
 /** Real ClickHouse-backed append-only raw landing (high-volume ticks/orderbook). INV-E1/T1 preserved. */
 export class ClickHouseRawStore implements AsyncRawStore {
   private readonly client: ClickHouseClient;
-  constructor(
-    url = process.env['CLICKHOUSE_URL'] ?? 'http://localhost:8123',
-    database = 'genesis',
-  ) {
+  constructor(url = process.env['CLICKHOUSE_URL'] ?? 'http://localhost:8123', database = 'genesis') {
     this.client = createClient({ url, database });
   }
 
@@ -20,12 +17,8 @@ export class ClickHouseRawStore implements AsyncRawStore {
     await this.client.insert({
       table: 'raw_records',
       values: recs.map((r) => ({
-        kind: r.kind,
-        symbol: r.symbol,
-        event_time_ms: r.event_time_ms,
-        ingest_time_ms: r.ingest_time_ms,
-        seq: r.seq,
-        payload: JSON.stringify(r.payload),
+        kind: r.kind, symbol: r.symbol, event_time_ms: r.event_time_ms,
+        ingest_time_ms: r.ingest_time_ms, seq: r.seq, payload: JSON.stringify(r.payload),
       })),
       format: 'JSONEachRow',
     });
@@ -42,25 +35,17 @@ export class ClickHouseRawStore implements AsyncRawStore {
     });
     const data = (await rows.json()) as Array<Record<string, unknown>>;
     return data.map((d) => ({
-      kind: d['kind'] as RawRecord['kind'],
-      symbol: String(d['symbol']),
+      kind: d['kind'] as RawRecord['kind'], symbol: String(d['symbol']),
       event_time: new Date(Number(d['event_time_ms'])).toISOString() as RawRecord['event_time'],
       ingest_time: new Date(Number(d['ingest_time_ms'])).toISOString() as RawRecord['ingest_time'],
-      event_time_ms: Number(d['event_time_ms']),
-      ingest_time_ms: Number(d['ingest_time_ms']),
-      seq: Number(d['seq']),
-      payload: JSON.parse(String(d['payload'])),
+      event_time_ms: Number(d['event_time_ms']), ingest_time_ms: Number(d['ingest_time_ms']),
+      seq: Number(d['seq']), payload: JSON.parse(String(d['payload'])),
     }));
   }
   async count(): Promise<number> {
-    const r = await this.client.query({
-      query: 'SELECT count() AS c FROM raw_records',
-      format: 'JSONEachRow',
-    });
+    const r = await this.client.query({ query: 'SELECT count() AS c FROM raw_records', format: 'JSONEachRow' });
     const rows = (await r.json()) as Array<{ c: string }>;
     return Number(rows[0]?.c ?? 0);
   }
-  async close(): Promise<void> {
-    await this.client.close();
-  }
+  async close(): Promise<void> { await this.client.close(); }
 }

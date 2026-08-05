@@ -14,15 +14,12 @@ function input(available: number, total = 1000): PortfolioInput {
     returns: {
       'KRW-BTC': [0.01, -0.02, 0.03, -0.01],
       'KRW-ETH': [0.011, -0.019, 0.028, -0.012], // correlated with BTC
-      'KRW-XRP': [-0.02, 0.03, -0.01, 0.02], // anti-correlated
+      'KRW-XRP': [-0.02, 0.03, -0.01, 0.02],     // anti-correlated
     },
     budget: { total, available },
     constraints: {
-      maxWeightPerSymbol: 0.2,
-      maxCorrelationGroupExposure: 0.35,
-      kellyFraction: 0.25,
-      correlationThreshold: 0.8,
-      maxTotalUtilization: 0.6,
+      maxWeightPerSymbol: 0.2, maxCorrelationGroupExposure: 0.35, kellyFraction: 0.25,
+      correlationThreshold: 0.8, maxTotalUtilization: 0.6,
     },
   };
 }

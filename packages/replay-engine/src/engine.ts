@@ -1,11 +1,6 @@
 import {
-  runPipeline,
-  projectDecision,
-  type EventStore,
-  type StoredEvent,
-  type Projection,
-  type UpcasterRegistry,
-  type EventInput,
+  runPipeline, projectDecision, type EventStore, type StoredEvent, type Projection,
+  type UpcasterRegistry, type EventInput,
 } from '@genesis/event-engine';
 import { asUUID, asISOTimestamp, asCorrelationId, asSnapshotId } from '@genesis/contracts';
 import type { DecisionRecord } from '@genesis/contracts';
@@ -17,8 +12,8 @@ export interface CreateSessionOpts {
   snapshot_id: string;
   replay_reason: ReplayReason;
   replay_speed?: number;
-  range?: EventRange; // by seq
-  asOfEventMs?: number; // OR point-in-time (event_time)
+  range?: EventRange;      // by seq
+  asOfEventMs?: number;    // OR point-in-time (event_time)
 }
 
 let counter = 0;
@@ -30,8 +25,8 @@ let counter = 0;
  */
 export class ReplayEngine {
   constructor(
-    private readonly sourceLog: EventStore, // the log to replay
-    private readonly replayLog: EventStore, // where replay's OWN events are recorded
+    private readonly sourceLog: EventStore,   // the log to replay
+    private readonly replayLog: EventStore,    // where replay's OWN events are recorded
     private readonly now: () => string = () => new Date(0).toISOString(),
     private readonly upcaster?: UpcasterRegistry,
   ) {}
@@ -71,68 +66,40 @@ export class ReplayEngine {
     const { events, range } = this.slice(opts);
     const session_id = `replay-${++counter}`;
     const speed = opts.replay_speed ?? 1;
-    const s = new ReplaySession(
-      session_id,
-      opts.snapshot_id,
-      events,
-      range,
-      speed,
-      opts.replay_reason,
-      this.now,
-    );
+    const s = new ReplaySession(session_id, opts.snapshot_id, events, range, speed, opts.replay_reason, this.now);
     s.begin();
     this.emit(ReplayEventTypes.Started, session_id, {
-      session_id,
-      snapshot_id: opts.snapshot_id,
-      fromSeq: range.fromSeq,
-      toSeq: range.toSeq,
-      replay_speed: speed,
-      replay_reason: opts.replay_reason,
+      session_id, snapshot_id: opts.snapshot_id, fromSeq: range.fromSeq, toSeq: range.toSeq,
+      replay_speed: speed, replay_reason: opts.replay_reason,
     });
     return s;
   }
 
   pause(s: ReplaySession): void {
     s.pause();
-    this.emit(ReplayEventTypes.Paused, s.session_id, {
-      session_id: s.session_id,
-      at_seq: s.currentSeq,
-    });
+    this.emit(ReplayEventTypes.Paused, s.session_id, { session_id: s.session_id, at_seq: s.currentSeq });
   }
   resume(s: ReplaySession): void {
     s.resume();
-    this.emit(ReplayEventTypes.Resumed, s.session_id, {
-      session_id: s.session_id,
-      at_seq: s.currentSeq,
-    });
+    this.emit(ReplayEventTypes.Resumed, s.session_id, { session_id: s.session_id, at_seq: s.currentSeq });
   }
   seek(s: ReplaySession, toSeq: number): void {
     const from = s.currentSeq;
     s.seek(toSeq);
-    this.emit(ReplayEventTypes.Seeked, s.session_id, {
-      session_id: s.session_id,
-      from_seq: from,
-      to_seq: toSeq,
-    });
+    this.emit(ReplayEventTypes.Seeked, s.session_id, { session_id: s.session_id, from_seq: from, to_seq: toSeq });
   }
 
   /** Run to the end. Uses runPipeline (no externalSink) → no external effects (INV-E3). */
   runToEnd(s: ReplaySession): void {
     try {
-      while (s.applyNext() !== null) {
-        /* stepping; speed is a UI hint, not correctness */
-      }
+      while (s.applyNext() !== null) { /* stepping; speed is a UI hint, not correctness */ }
       this.emit(ReplayEventTypes.Finished, s.session_id, {
-        session_id: s.session_id,
-        final_state_hash: s.stateHash ?? '',
-        applied: s.appliedEvents.length,
+        session_id: s.session_id, final_state_hash: s.stateHash ?? '', applied: s.appliedEvents.length,
       });
     } catch (err) {
       s.fail(String(err));
       this.emit(ReplayEventTypes.Failed, s.session_id, {
-        session_id: s.session_id,
-        at_seq: s.currentSeq,
-        error: String(err),
+        session_id: s.session_id, at_seq: s.currentSeq, error: String(err),
       });
     }
   }

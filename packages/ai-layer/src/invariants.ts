@@ -14,9 +14,8 @@ function validatedProposal(): AIProposal {
 /** INV-D3: AI has no Data-Plane/LLM execution path; capabilities all false. */
 function checkD3(): CheckResult {
   const ai = new AILayer();
-  const noExec =
-    (ai as unknown as Record<string, unknown>)['execute'] === undefined &&
-    (ai as unknown as Record<string, unknown>)['placeOrder'] === undefined;
+  const noExec = (ai as unknown as Record<string, unknown>)['execute'] === undefined
+    && (ai as unknown as Record<string, unknown>)['placeOrder'] === undefined;
   const capsFalse = Object.values(AI_CAPABILITIES).every((v) => v === false);
   return noExec && capsFalse && AI_CAPABILITIES.dataPlaneLLM === false
     ? { id: 'INV-D3', status: 'pass' }
@@ -25,12 +24,8 @@ function checkD3(): CheckResult {
 
 /** INV-S3: AI runtime has no account/order/risk/execution/exchange access. */
 function checkS3(): CheckResult {
-  const ok =
-    !AI_CAPABILITIES.account &&
-    !AI_CAPABILITIES.orderApi &&
-    !AI_CAPABILITIES.risk &&
-    !AI_CAPABILITIES.execution &&
-    !AI_CAPABILITIES.exchange;
+  const ok = !AI_CAPABILITIES.account && !AI_CAPABILITIES.orderApi && !AI_CAPABILITIES.risk
+    && !AI_CAPABILITIES.execution && !AI_CAPABILITIES.exchange;
   return ok ? { id: 'INV-S3', status: 'pass' } : { id: 'INV-S3', status: 'fail' };
 }
 
@@ -40,9 +35,7 @@ function checkV3(): CheckResult {
   const artifact = freezeProposal(p, '1.0.0');
   const beforeSign = isProductionEligible(artifact); // false — AI cannot self-approve
   const afterSign = isProductionEligible({ ...artifact, approval_signature: 'gov-sig' });
-  return !beforeSign && afterSign
-    ? { id: 'INV-V3', status: 'pass' }
-    : { id: 'INV-V3', status: 'fail' };
+  return !beforeSign && afterSign ? { id: 'INV-V3', status: 'pass' } : { id: 'INV-V3', status: 'fail' };
 }
 
 /** INV-V5: frozen artifact records provenance (model/prompt/artifact versions + input refs). */
@@ -50,12 +43,7 @@ function checkV5(): CheckResult {
   const p = validatedProposal();
   const a = freezeProposal(p, '2.0.0');
   const pv = a.provenance;
-  const ok =
-    !!pv.model_version &&
-    !!pv.prompt_version &&
-    pv.artifact_version === '2.0.0' &&
-    pv.input_refs.length > 0 &&
-    !!a.content_hash;
+  const ok = !!pv.model_version && !!pv.prompt_version && pv.artifact_version === '2.0.0' && pv.input_refs.length > 0 && !!a.content_hash;
   return ok ? { id: 'INV-V5', status: 'pass' } : { id: 'INV-V5', status: 'fail' };
 }
 

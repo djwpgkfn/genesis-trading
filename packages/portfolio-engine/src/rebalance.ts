@@ -1,10 +1,6 @@
 import type { Allocation } from './types.js';
 
-export interface OrderIntent {
-  symbol: string;
-  side: 'buy' | 'sell';
-  notional: number;
-}
+export interface OrderIntent { symbol: string; side: 'buy' | 'sell'; notional: number }
 
 /**
  * Target vs current → order intents (deltas). These are INTENTS only; every order must still

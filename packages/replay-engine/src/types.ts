@@ -1,5 +1,4 @@
-export type ReplayReason =
-  'debug' | 'research' | 'education' | 'blog' | 'bug-repro' | 'audit' | string;
+export type ReplayReason = 'debug' | 'research' | 'education' | 'blog' | 'bug-repro' | 'audit' | string;
 export type ReplayStatus = 'created' | 'running' | 'paused' | 'finished' | 'failed';
 
 export interface EventRange {

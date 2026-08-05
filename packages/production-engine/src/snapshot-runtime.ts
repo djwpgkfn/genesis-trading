@@ -2,18 +2,10 @@ import type { ProductionSnapshot, Hash } from '@genesis/contracts';
 import { contentHash } from '@genesis/event-engine';
 
 const REQUIRED_PINS: readonly (keyof ProductionSnapshot)[] = [
-  'feature_set_version',
-  'risk_config_version',
-  'portfolio_config_version',
-  'engine_version',
-  'mtf_weights_version',
-  'market_health_config_version',
-  'score_config_version',
-  'memory_method_version',
-  'correlation_method_version',
-  'fee_schedule_version',
-  'market_rules_version',
-  'timezone',
+  'feature_set_version', 'risk_config_version', 'portfolio_config_version', 'engine_version',
+  'mtf_weights_version', 'market_health_config_version', 'score_config_version',
+  'memory_method_version', 'correlation_method_version', 'fee_schedule_version',
+  'market_rules_version', 'timezone',
 ];
 
 /** INV-V5: every decision-affecting element must be pinned. */

@@ -17,16 +17,7 @@ function store(): InMemoryRawStore {
     { symbol: 'KRW-BTC', event_time_ms: 59_000, price: 90, volume: 1, side: 'bid', seq: 3 },
   ];
   for (const t of trades)
-    s.append({
-      kind: 'trade',
-      symbol: t.symbol,
-      event_time: iso(t.event_time_ms),
-      ingest_time: iso(t.event_time_ms),
-      event_time_ms: t.event_time_ms,
-      ingest_time_ms: t.event_time_ms,
-      seq: t.seq,
-      payload: t,
-    });
+    s.append({ kind: 'trade', symbol: t.symbol, event_time: iso(t.event_time_ms), ingest_time: iso(t.event_time_ms), event_time_ms: t.event_time_ms, ingest_time_ms: t.event_time_ms, seq: t.seq, payload: t });
   return s;
 }
 
@@ -34,18 +25,8 @@ describe('compute (offline=online parity, cache correctness)', () => {
   it('computes DAG feature range_pct = range/close', () => {
     const reg = new FeatureDefinitionRegistry();
     SAMPLE_FEATURES.forEach((f) => reg.register(f));
-    const plan = resolveSet(reg, {
-      id: 's',
-      version: v1,
-      features: [{ id: 'range_pct_1m', version: v1 }],
-    });
-    const v = computeFeatures({
-      registry: reg,
-      plan,
-      store: store(),
-      symbol: 'KRW-BTC',
-      asOfMs: 120_000,
-    });
+    const plan = resolveSet(reg, { id: 's', version: v1, features: [{ id: 'range_pct_1m', version: v1 }] });
+    const v = computeFeatures({ registry: reg, plan, store: store(), symbol: 'KRW-BTC', asOfMs: 120_000 });
     expect(v.get('close_1m')).toBe(90);
     expect(v.get('range_1m')).toBe(30); // high120 - low90
     expect(v.get('range_pct_1m')).toBeCloseTo(30 / 90, 12);
@@ -54,28 +35,11 @@ describe('compute (offline=online parity, cache correctness)', () => {
   it('cache == recompute (INV-T4)', () => {
     const reg = new FeatureDefinitionRegistry();
     SAMPLE_FEATURES.forEach((f) => reg.register(f));
-    const plan = resolveSet(reg, {
-      id: 's',
-      version: v1,
-      features: [{ id: 'range_pct_1m', version: v1 }],
-    });
+    const plan = resolveSet(reg, { id: 's', version: v1, features: [{ id: 'range_pct_1m', version: v1 }] });
     const cache = new InMemoryFeatureCache();
     const s = store();
-    const a = computeFeatures({
-      registry: reg,
-      plan,
-      store: s,
-      cache,
-      symbol: 'KRW-BTC',
-      asOfMs: 120_000,
-    });
-    const b = computeFeatures({
-      registry: reg,
-      plan,
-      store: s,
-      symbol: 'KRW-BTC',
-      asOfMs: 120_000,
-    });
+    const a = computeFeatures({ registry: reg, plan, store: s, cache, symbol: 'KRW-BTC', asOfMs: 120_000 });
+    const b = computeFeatures({ registry: reg, plan, store: s, symbol: 'KRW-BTC', asOfMs: 120_000 });
     expect(a.get('range_pct_1m')).toBe(b.get('range_pct_1m'));
     expect(cache.size()).toBeGreaterThan(0);
   });

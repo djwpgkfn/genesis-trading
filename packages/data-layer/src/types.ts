@@ -25,10 +25,7 @@ export interface Trade {
   seq: number;
 }
 
-export interface OrderbookLevel {
-  price: number;
-  size: number;
-}
+export interface OrderbookLevel { price: number; size: number }
 export interface OrderbookSnapshot {
   symbol: Symbol;
   event_time_ms: number;
@@ -53,7 +50,7 @@ export interface Candle {
   low: number;
   close: number;
   volume: number;
-  acc_price: number; // sum(price*volume)
+  acc_price: number;    // sum(price*volume)
   source: 'reconstructed' | 'rest';
 }
 

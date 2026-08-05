@@ -3,25 +3,10 @@ import { RiskEngine } from './engine.js';
 import { trailingStop, trailingExit } from './limits.js';
 import type { Limits, Position, TradeRequest } from './types.js';
 
-const limits: Limits = {
-  maxTotalExposure: 1000,
-  maxSymbolExposure: 600,
-  maxDrawdownPct: 0.2,
-  trailingPct: 0.1,
-};
+const limits: Limits = { maxTotalExposure: 1000, maxSymbolExposure: 600, maxDrawdownPct: 0.2, trailingPct: 0.1 };
 const eq = { peak: 100, current: 100 };
-const req = (id: string, n = 100): TradeRequest => ({
-  request_id: id,
-  symbol: 'KRW-BTC',
-  side: 'buy',
-  notional: n,
-});
-const run = (total = 1000): RiskEngine => {
-  const e = new RiskEngine({ total_budget: total, limits });
-  e.init();
-  e.start();
-  return e;
-};
+const req = (id: string, n = 100): TradeRequest => ({ request_id: id, symbol: 'KRW-BTC', side: 'buy', notional: n });
+const run = (total = 1000): RiskEngine => { const e = new RiskEngine({ total_budget: total, limits }); e.init(); e.start(); return e; };
 
 describe('Risk Engine (final authority)', () => {
   it('no cold-start into RUN; INIT→READY→RUN only', () => {

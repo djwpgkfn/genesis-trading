@@ -5,22 +5,12 @@ import { queryAsOf } from './query/as-of.js';
 import type { RawRecord, Trade } from './types.js';
 
 const iso = (ms: number) => new Date(ms).toISOString();
-function rec(
-  kind: RawRecord['kind'],
-  symbol: string,
-  evMs: number,
-  inMs: number,
-  seq: number,
-): RawRecord {
+function rec(kind: RawRecord['kind'], symbol: string, evMs: number, inMs: number, seq: number): RawRecord {
   return {
-    kind,
-    symbol,
+    kind, symbol,
     event_time: iso(evMs) as RawRecord['event_time'],
     ingest_time: iso(inMs) as RawRecord['ingest_time'],
-    event_time_ms: evMs,
-    ingest_time_ms: inMs,
-    seq,
-    payload: {},
+    event_time_ms: evMs, ingest_time_ms: inMs, seq, payload: {},
   };
 }
 
@@ -73,6 +63,7 @@ function checkE1(): CheckResult {
   const ok = got.length === seqs.length && got.every((v, i) => v === seqs[i]);
   return ok ? { id: 'INV-E1', status: 'pass' } : { id: 'INV-E1', status: 'fail' };
 }
+
 
 /** INV-T3: memory reads are past-only as-of — a read at time T never returns future records. */
 function checkT3(): CheckResult {

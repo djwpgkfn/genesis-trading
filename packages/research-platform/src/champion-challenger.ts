@@ -24,33 +24,15 @@ export class ResearchChampionChallenger {
   evaluate(challenger: Experiment, primaryMetric = 'activity'): PromotionDecision {
     const r = challenger.result;
     if (!r || !r.passed || !r.folds || r.folds.length === 0) {
-      return {
-        champion_experiment_id: this.champion?.experiment_id ?? null,
-        challenger_experiment_id: challenger.experiment_id,
-        outcome: 'rejected',
-        reason: 'not WFV-validated',
-      };
+      return { champion_experiment_id: this.champion?.experiment_id ?? null, challenger_experiment_id: challenger.experiment_id, outcome: 'rejected', reason: 'not WFV-validated' };
     }
     const chMetric = r.metrics[primaryMetric] ?? challenger.result!.decisions;
-    const champMetric =
-      this.champion?.result?.metrics[primaryMetric] ??
-      this.champion?.result?.decisions ??
-      -Infinity;
+    const champMetric = this.champion?.result?.metrics[primaryMetric] ?? this.champion?.result?.decisions ?? -Infinity;
     if (this.champion === null || chMetric > champMetric) {
       const prev = this.champion?.experiment_id ?? null;
       this.champion = challenger; // Research-internal champion only
-      return {
-        champion_experiment_id: prev,
-        challenger_experiment_id: challenger.experiment_id,
-        outcome: 'promoted-in-research',
-        reason: 'beat research champion (WFV-validated)',
-      };
+      return { champion_experiment_id: prev, challenger_experiment_id: challenger.experiment_id, outcome: 'promoted-in-research', reason: 'beat research champion (WFV-validated)' };
     }
-    return {
-      champion_experiment_id: this.champion.experiment_id,
-      challenger_experiment_id: challenger.experiment_id,
-      outcome: 'rejected',
-      reason: 'did not beat champion',
-    };
+    return { champion_experiment_id: this.champion.experiment_id, challenger_experiment_id: challenger.experiment_id, outcome: 'rejected', reason: 'did not beat champion' };
   }
 }

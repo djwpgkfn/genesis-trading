@@ -7,7 +7,7 @@ export interface ResolvedPlan {
   set_id: string;
   set_version: string;
   order: FeatureRef[]; // topo-sorted, all versions pinned
-  plan_key: string; // stable id of the exact resolved plan (for Snapshot pinning / cache)
+  plan_key: string;    // stable id of the exact resolved plan (for Snapshot pinning / cache)
 }
 
 /**

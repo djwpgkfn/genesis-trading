@@ -10,12 +10,7 @@ export interface ReplayBookmark {
 
 let bmCounter = 0;
 export function createBookmark(session: ReplaySession, label: string): ReplayBookmark {
-  return {
-    bookmark_id: `bm-${++bmCounter}`,
-    session_id: session.session_id,
-    seq: session.currentSeq,
-    label,
-  };
+  return { bookmark_id: `bm-${++bmCounter}`, session_id: session.session_id, seq: session.currentSeq, label };
 }
 
 export interface ReplayDiff {
@@ -28,9 +23,5 @@ export interface ReplayDiff {
 export function diffSessions(a: ReplaySession, b: ReplaySession): ReplayDiff {
   const ah = a.stateHash;
   const bh = b.stateHash;
-  return {
-    state_hash_equal: ah === bh,
-    ...(ah ? { a_state_hash: ah } : {}),
-    ...(bh ? { b_state_hash: bh } : {}),
-  };
+  return { state_hash_equal: ah === bh, ...(ah ? { a_state_hash: ah } : {}), ...(bh ? { b_state_hash: bh } : {}) };
 }

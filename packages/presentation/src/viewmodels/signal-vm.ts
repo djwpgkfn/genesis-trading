@@ -22,5 +22,4 @@ export function signalViewModel(s: Signal): SignalViewModel {
     timestamp_ms: s.timestamp_ms,
   };
 }
-export const signalViewModels = (list: readonly Signal[]): SignalViewModel[] =>
-  list.map(signalViewModel);
+export const signalViewModels = (list: readonly Signal[]): SignalViewModel[] => list.map(signalViewModel);

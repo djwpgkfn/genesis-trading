@@ -7,7 +7,6 @@ Baseline docs (single source of truth): Constitution · System Contracts · Inva
 This repository is the **S0 Repository Foundation**. See `S0_COMPLETION_REPORT.md`.
 
 ## Layout
-
 - `docs/` — project rules & pointers to baseline docs (design docs live in the Design Pack, not here)
 - `contracts/` — shared contract **types** (Event, Snapshot, Manifest, DecisionRecord) — types only in S0
 - `packages/` — engine packages (invariant-runner in S0; data/feature/risk/... added S1+)
@@ -17,7 +16,6 @@ This repository is the **S0 Repository Foundation**. See `S0_COMPLETION_REPORT.m
 - `scripts/`, `configs/`, `.github/workflows/` — automation & config
 
 ## Commands
-
 `npm run ci` runs: build · lint · format:check · contract:validate · invariant:validate · test.
 
 > Network is disabled in the authoring environment; run `npm install` in your own Windows environment first.

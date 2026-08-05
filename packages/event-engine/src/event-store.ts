@@ -16,17 +16,16 @@ export class InMemoryEventStore implements EventStore {
 
   append(input: EventInput): StoredEvent {
     if (!decisionClassValid(input)) {
-      throw new Error(
-        `Decision-class event missing snapshot_id/correlation_id (INV-E5): ${input.event_type}`,
-      );
+      throw new Error(`Decision-class event missing snapshot_id/correlation_id (INV-E5): ${input.event_type}`);
     }
     const seq = this.log.length + 1;
     const prev = this.log[this.log.length - 1];
     const prev_hash = prev?.hash;
     const content = contentHash({ ...input, seq, prev_hash: prev_hash ?? null });
     const hash = chainHash(prev_hash, content);
-    const sealed: StoredEvent =
-      prev_hash === undefined ? { ...input, seq, hash } : { ...input, seq, prev_hash, hash };
+    const sealed: StoredEvent = prev_hash === undefined
+      ? { ...input, seq, hash }
+      : { ...input, seq, prev_hash, hash };
     this.log.push(sealed); // append-only; existing entries never mutated
     return sealed;
   }

@@ -10,24 +10,12 @@ const iso = (ms: number) => asISOTimestamp(new Date(ms).toISOString());
 function seed(): InMemoryEventStore {
   const s = new InMemoryEventStore();
   const mk = (n: number, type: string, payload: unknown): EventInput => ({
-    event_id: asUUID(`e${n}`),
-    event_type: type,
-    event_time: iso(n * 1000),
-    ingest_time: iso(n * 1000),
-    source_engine: 't',
-    schema_version: 1,
-    correlation_id: asCorrelationId('cycle-1'),
-    snapshot_id: asSnapshotId('s1'),
-    payload,
+    event_id: asUUID(`e${n}`), event_type: type, event_time: iso(n * 1000), ingest_time: iso(n * 1000),
+    source_engine: 't', schema_version: 1, correlation_id: asCorrelationId('cycle-1'), snapshot_id: asSnapshotId('s1'), payload,
   });
   s.append(mk(1, 'MarketHealth.scored', { mode: 'normal', score: 0.5 }));
   s.append(mk(2, 'Strategy.evaluated', { count: 2 }));
-  s.append(
-    mk(3, 'Portfolio.planned', {
-      allocations: [{ symbol: 'KRW-BTC', notional: 100 }],
-      utilization: 0.1,
-    }),
-  );
+  s.append(mk(3, 'Portfolio.planned', { allocations: [{ symbol: 'KRW-BTC', notional: 100 }], utilization: 0.1 }));
   s.append(mk(4, EventTypes.DecisionStage, { action: 'buy' }));
   s.append(mk(5, EventTypes.DecisionOutcome, { action: 'buy', reason: 'ok' }));
   return s;
@@ -45,34 +33,23 @@ function checkReadOnly(): CheckResult {
 function checkExplainability(): CheckResult {
   const s = seed();
   const ex = explainabilityView(new LiveDataSource(s), 'cycle-1');
-  const ok =
-    ex.decision !== null &&
-    ex.timeline.length >= 3 &&
-    ex.timeline[0]!.event_type === 'MarketHealth.scored';
+  const ok = ex.decision !== null && ex.timeline.length >= 3 && ex.timeline[0]!.event_type === 'MarketHealth.scored';
   return ok ? { id: 'INV-E2', status: 'pass' } : { id: 'INV-E2', status: 'fail' };
 }
 
 /** INV-E: the only write surface is ControlCommand; emergency routes to Risk FORCE_EXIT, not orders. */
 function checkControlSurface(): CheckResult {
   let forced = '';
-  const risk: RiskControlPort = {
-    forceExit: (r) => {
-      forced = r;
-    },
-    run: () => {},
-    stop: () => {},
-  };
+  const risk: RiskControlPort = { forceExit: (r) => { forced = r; }, run: () => {}, stop: () => {} };
   const cp = new ControlPanel(risk);
   cp.emergencyExit('op1', 'panic');
   const noOrder = (cp as unknown as Record<string, unknown>)['placeOrder'] === undefined;
-  const onlyControl = cp
-    .eventLog()
-    .all()
-    .every((e) => e.event_type === 'ControlCommand.issued');
+  const onlyControl = cp.eventLog().all().every((e) => e.event_type === 'ControlCommand.issued');
   return forced === 'panic' && noOrder && onlyControl
     ? { id: 'INV-E5', status: 'pass' }
     : { id: 'INV-E5', status: 'fail' };
 }
+
 
 import { decisionViewModel, replayViewModel } from '@genesis/presentation';
 import { buildSampleRecording } from '@genesis/replay-engine';
@@ -80,24 +57,11 @@ import { OperatorReplaySession } from '@genesis/replay-engine';
 import type { Decision } from '@genesis/decision-engine';
 
 const sampleDecision = (): Decision => ({
-  id: 'decision-1',
-  symbol: 'KRW-BTC',
-  action: 'BUY',
-  confidence: 0.72,
-  reason: 'r',
-  strategy_used: 'momentum',
-  signal_used: ['TREND_UP'],
-  expected_risk: 0.4,
-  expected_reward: 0.8,
+  id: 'decision-1', symbol: 'KRW-BTC', action: 'BUY', confidence: 0.72, reason: 'r',
+  strategy_used: 'momentum', signal_used: ['TREND_UP'], expected_risk: 0.4, expected_reward: 0.8,
   timestamp_ms: 1,
-  trace: {
-    action: 'BUY',
-    strategy: 'momentum',
-    signals: ['TREND_UP'],
-    features: ['f'],
-    confidence: 0.72,
-    steps: [{ stage: 'decision', detail: 'BUY', refs: [] }],
-  },
+  trace: { action: 'BUY', strategy: 'momentum', signals: ['TREND_UP'], features: ['f'], confidence: 0.72,
+    steps: [{ stage: 'decision', detail: 'BUY', refs: [] }] },
 });
 
 /** INV-E6 (Presentation-purity / PR1): mappers are pure — same input ⇒ deep-equal output. */

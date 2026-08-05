@@ -12,6 +12,5 @@ Derived from Architecture Constitution v1.0. These are enforced by CI where poss
 7. **Constitution 위반 금지** — conflicts are never patched directly; raise an **RFC candidate**. (Governance)
 
 ### Pre-change 5-point gate (Playbook G1)
-
 Before any new feature: (1) Constitution violation? (2) Contracts impact? (3) Invariant impact?
 (4) Snapshot reproducibility impact? (5) Event Sourcing impact? → conflict ⇒ RFC only.

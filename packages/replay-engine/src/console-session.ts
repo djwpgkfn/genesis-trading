@@ -17,10 +17,7 @@ export interface RecordedFrame {
   strategy: StrategyDecision;
   decision: Decision; // stored SSOT
 }
-export interface ReplayCursor {
-  frame_index: number;
-  decision_id: string;
-}
+export interface ReplayCursor { frame_index: number; decision_id: string }
 
 /**
  * Operator-facing replay session (read-only). Tracks transport state + cursor + speed over an
@@ -37,57 +34,25 @@ export class OperatorReplaySession {
   }
 
   // ---- getters ----
-  getState(): ReplayState {
-    return this.state;
-  }
-  getSpeed(): ReplaySpeed {
-    return this.speed;
-  }
-  getCursor(): ReplayCursor {
-    return { ...this.cursor };
-  }
-  totalFrames(): number {
-    return this.frames.length;
-  }
-  timeline(): readonly RecordedFrame[] {
-    return this.frames;
-  }
+  getState(): ReplayState { return this.state; }
+  getSpeed(): ReplaySpeed { return this.speed; }
+  getCursor(): ReplayCursor { return { ...this.cursor }; }
+  totalFrames(): number { return this.frames.length; }
+  timeline(): readonly RecordedFrame[] { return this.frames; }
   currentFrame(): RecordedFrame {
     const f = this.frames[this.cursor.frame_index];
     if (!f) throw new Error('cursor out of range');
     return f;
   }
-  restoreSnapshot(): MarketSnapshot {
-    return this.currentFrame().snapshot;
-  }
-  restoreDecision(): Decision {
-    return this.currentFrame().decision;
-  }
+  restoreSnapshot(): MarketSnapshot { return this.currentFrame().snapshot; }
+  restoreDecision(): Decision { return this.currentFrame().decision; }
 
   // ---- transport ----
-  load(): this {
-    this.transition('LOADED');
-    this.setCursor(0);
-    return this;
-  }
-  play(speed?: ReplaySpeed): this {
-    if (speed) this.speed = speed;
-    this.transition('PLAYING');
-    return this;
-  }
-  pause(): this {
-    this.transition('PAUSED');
-    return this;
-  }
-  stop(): this {
-    this.transition('STOPPED');
-    return this;
-  }
-  reset(): this {
-    this.transition('LOADED');
-    this.setCursor(0);
-    return this;
-  }
+  load(): this { this.transition('LOADED'); this.setCursor(0); return this; }
+  play(speed?: ReplaySpeed): this { if (speed) this.speed = speed; this.transition('PLAYING'); return this; }
+  pause(): this { this.transition('PAUSED'); return this; }
+  stop(): this { this.transition('STOPPED'); return this; }
+  reset(): this { this.transition('LOADED'); this.setCursor(0); return this; }
 
   /** Speed is presentation-only; allowed while LOADED/PAUSED/PLAYING (never changes content). */
   setSpeed(speed: ReplaySpeed): this {
@@ -98,8 +63,7 @@ export class OperatorReplaySession {
 
   /** Auto-advance one frame (called by the UI timer at speed cadence). */
   advance(): boolean {
-    if (this.state !== 'PLAYING')
-      throw new Error(`advance only while PLAYING (state=${this.state})`);
+    if (this.state !== 'PLAYING') throw new Error(`advance only while PLAYING (state=${this.state})`);
     const next = this.cursor.frame_index + 1;
     if (next >= this.frames.length) {
       // already at the last frame — nothing further to advance to.
@@ -116,16 +80,8 @@ export class OperatorReplaySession {
   }
 
   // ---- navigation (LOADED/PAUSED only) ----
-  seek(frameIndex: number): this {
-    this.assertNavigable();
-    this.setCursor(frameIndex);
-    return this;
-  }
-  step(delta: 1 | -1): this {
-    this.assertNavigable();
-    this.setCursor(this.cursor.frame_index + delta);
-    return this;
-  }
+  seek(frameIndex: number): this { this.assertNavigable(); this.setCursor(frameIndex); return this; }
+  step(delta: 1 | -1): this { this.assertNavigable(); this.setCursor(this.cursor.frame_index + delta); return this; }
   /** Jump to a specific decision (Decision History Panel click). */
   seekToDecision(decisionId: string): this {
     this.assertNavigable();
@@ -145,8 +101,7 @@ export class OperatorReplaySession {
     this.cursor = { frame_index: i, decision_id: this.frames[i]!.decision.id };
   }
   private transition(to: ReplayState): void {
-    if (!canReplayTransition(this.state, to))
-      throw new Error(`invalid replay transition ${this.state} → ${to}`);
+    if (!canReplayTransition(this.state, to)) throw new Error(`invalid replay transition ${this.state} → ${to}`);
     this.state = to;
   }
 }

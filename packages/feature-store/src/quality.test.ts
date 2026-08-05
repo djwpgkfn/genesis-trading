@@ -4,14 +4,8 @@ import type { RawRecord } from '@genesis/data-layer';
 
 const iso = (ms: number) => new Date(ms).toISOString() as RawRecord['event_time'];
 const r = (ev: number, seq: number): RawRecord => ({
-  kind: 'trade',
-  symbol: 'KRW-BTC',
-  event_time: iso(ev),
-  ingest_time: iso(ev),
-  event_time_ms: ev,
-  ingest_time_ms: ev,
-  seq,
-  payload: {},
+  kind: 'trade', symbol: 'KRW-BTC', event_time: iso(ev), ingest_time: iso(ev),
+  event_time_ms: ev, ingest_time_ms: ev, seq, payload: {},
 });
 
 describe('data quality', () => {

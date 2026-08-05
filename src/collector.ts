@@ -3,13 +3,7 @@
 // backoff, and heartbeats. App/composition layer only — no Contracts/architecture changes.
 import { UpbitWsTransport, type UpbitConfig } from '@genesis/adapters-upbit';
 import { StructuredLogger } from '@genesis/ops';
-import type {
-  WsTransport,
-  WsMessage,
-  RawStore,
-  RawRecord,
-  MarketDataKind,
-} from '@genesis/data-layer';
+import type { WsTransport, WsMessage, RawStore, RawRecord, MarketDataKind } from '@genesis/data-layer';
 import { asISOTimestamp } from '@genesis/contracts';
 import type { Clock } from './container.js';
 
@@ -72,8 +66,7 @@ export class WebSocketCollector {
     this.maxBackoffMs = opts.maxBackoffMs ?? 30_000;
     this.progressEvery = opts.progressEvery ?? 500;
     this.backoffMs = this.initialBackoffMs;
-    this.makeTransport =
-      transportFactory ?? (() => new UpbitWsTransport(cfg, () => this.clock.now()));
+    this.makeTransport = transportFactory ?? (() => new UpbitWsTransport(cfg, () => this.clock.now()));
   }
 
   /** Number of raw records persisted so far. */
@@ -100,11 +93,7 @@ export class WebSocketCollector {
     try {
       await transport.connect();
       this.backoffMs = this.initialBackoffMs;
-      this.logger.info(
-        'ws connected',
-        { trace_id: `ws-${this.clock.now()}` },
-        { codes: this.codes },
-      );
+      this.logger.info('ws connected', { trace_id: `ws-${this.clock.now()}` }, { codes: this.codes });
       await transport.subscribe(
         UpbitWsTransport.subscription([
           { type: 'ticker', codes: this.codes },
@@ -113,11 +102,7 @@ export class WebSocketCollector {
       );
       this.startHeartbeat();
     } catch (e) {
-      this.logger.warn(
-        'ws connect failed',
-        {},
-        { error: e instanceof Error ? e.message : String(e) },
-      );
+      this.logger.warn('ws connect failed', {}, { error: e instanceof Error ? e.message : String(e) });
       this.scheduleReconnect();
     }
   }
@@ -164,13 +149,7 @@ export class WebSocketCollector {
     this.heartbeat = setInterval(() => {
       void this.transport
         ?.ping()
-        .catch((e) =>
-          this.logger.warn(
-            'ws ping failed',
-            {},
-            { error: e instanceof Error ? e.message : String(e) },
-          ),
-        );
+        .catch((e) => this.logger.warn('ws ping failed', {}, { error: e instanceof Error ? e.message : String(e) }));
     }, this.heartbeatMs);
     if (typeof this.heartbeat.unref === 'function') this.heartbeat.unref();
   }

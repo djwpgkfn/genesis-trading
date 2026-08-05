@@ -9,10 +9,7 @@ export class UpbitWsTransport implements WsTransport {
   private msgCb: ((m: WsMessage) => void) | null = null;
   private closeCb: (() => void) | null = null;
 
-  constructor(
-    private readonly cfg: UpbitConfig,
-    private readonly now: () => number = systemNowMs,
-  ) {}
+  constructor(private readonly cfg: UpbitConfig, private readonly now: () => number = systemNowMs) {}
 
   async connect(): Promise<void> {
     const ws = new WebSocket(this.cfg.wsUrl);
@@ -23,25 +20,16 @@ export class UpbitWsTransport implements WsTransport {
       ws.onerror = () => reject(new Error('Upbit WS connect error'));
     });
     ws.onmessage = (ev: MessageEvent) => {
-      const text =
-        typeof ev.data === 'string'
-          ? ev.data
-          : Buffer.from(ev.data as ArrayBuffer).toString('utf8');
+      const text = typeof ev.data === 'string' ? ev.data : Buffer.from(ev.data as ArrayBuffer).toString('utf8');
       let data: unknown;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = text;
-      }
+      try { data = JSON.parse(text); } catch { data = text; }
       this.msgCb?.({ data, received_ms: this.now() });
     };
     ws.onclose = () => this.closeCb?.();
   }
 
   /** Build Upbit subscription. `spec` = [{type,codes}] entries. */
-  static subscription(
-    spec: Array<{ type: 'ticker' | 'trade' | 'orderbook'; codes: string[] }>,
-  ): unknown[] {
+  static subscription(spec: Array<{ type: 'ticker' | 'trade' | 'orderbook'; codes: string[] }>): unknown[] {
     return [{ ticket: randomUUID() }, ...spec, { format: 'DEFAULT' }];
   }
 
@@ -53,13 +41,7 @@ export class UpbitWsTransport implements WsTransport {
   async ping(): Promise<void> {
     this.ws?.send('PING');
   }
-  onMessage(cb: (m: WsMessage) => void): void {
-    this.msgCb = cb;
-  }
-  onClose(cb: () => void): void {
-    this.closeCb = cb;
-  }
-  async close(): Promise<void> {
-    this.ws?.close();
-  }
+  onMessage(cb: (m: WsMessage) => void): void { this.msgCb = cb; }
+  onClose(cb: () => void): void { this.closeCb = cb; }
+  async close(): Promise<void> { this.ws?.close(); }
 }

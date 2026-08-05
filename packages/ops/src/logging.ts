@@ -10,13 +10,7 @@ export interface LogContext {
   replay_id?: string;
   trace_id?: string;
 }
-export interface LogEntry {
-  ts: string;
-  level: LogLevel;
-  message: string;
-  ctx: LogContext;
-  fields?: Record<string, unknown>;
-}
+export interface LogEntry { ts: string; level: LogLevel; message: string; ctx: LogContext; fields?: Record<string, unknown> }
 export type LogSink = (e: LogEntry) => void;
 
 /** Structured logger. Every entry carries the standard correlation IDs. Separate from the event log. */
@@ -32,12 +26,7 @@ export class StructuredLogger {
     return new StructuredLogger(this.sink, this.now, { ...this.ctx, ...ctx });
   }
 
-  log(
-    level: LogLevel,
-    message: string,
-    ctx: LogContext = {},
-    fields?: Record<string, unknown>,
-  ): LogEntry {
+  log(level: LogLevel, message: string, ctx: LogContext = {}, fields?: Record<string, unknown>): LogEntry {
     const merged: LogContext = { trace_id: this.ctx.trace_id ?? randomUUID(), ...this.ctx, ...ctx };
     const entry: LogEntry = fields
       ? { ts: this.now(), level, message, ctx: merged, fields }
@@ -45,13 +34,7 @@ export class StructuredLogger {
     this.sink(entry);
     return entry;
   }
-  info(m: string, c?: LogContext, f?: Record<string, unknown>): LogEntry {
-    return this.log('info', m, c, f);
-  }
-  warn(m: string, c?: LogContext, f?: Record<string, unknown>): LogEntry {
-    return this.log('warn', m, c, f);
-  }
-  error(m: string, c?: LogContext, f?: Record<string, unknown>): LogEntry {
-    return this.log('error', m, c, f);
-  }
+  info(m: string, c?: LogContext, f?: Record<string, unknown>): LogEntry { return this.log('info', m, c, f); }
+  warn(m: string, c?: LogContext, f?: Record<string, unknown>): LogEntry { return this.log('warn', m, c, f); }
+  error(m: string, c?: LogContext, f?: Record<string, unknown>): LogEntry { return this.log('error', m, c, f); }
 }

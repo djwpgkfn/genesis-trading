@@ -12,15 +12,8 @@ async function main(): Promise<void> {
   const rest = new UpbitRestClient(cfg);
 
   // 1) public candles
-  const candles = await rest.getCandles({
-    symbol: 'KRW-BTC',
-    tf: '1m',
-    toMs: Date.now(),
-    count: 3,
-  });
-  console.log(
-    `[REST] fetched ${candles.length} KRW-BTC 1m candles; last close=${candles.at(-1)?.close}`,
-  );
+  const candles = await rest.getCandles({ symbol: 'KRW-BTC', tf: '1m', toMs: Date.now(), count: 3 });
+  console.log(`[REST] fetched ${candles.length} KRW-BTC 1m candles; last close=${candles.at(-1)?.close}`);
 
   // 2) private accounts (requires keys)
   if (cfg.accessKey && cfg.secretKey) {
@@ -37,17 +30,11 @@ async function main(): Promise<void> {
     ws.onMessage((m) => {
       const d = m.data as { code?: string; trade_price?: number };
       if (d.trade_price) console.log(`[WS] ${d.code} trade_price=${d.trade_price}`);
-      if (++n >= 3) {
-        void ws.close();
-        resolve();
-      }
+      if (++n >= 3) { void ws.close(); resolve(); }
     });
     await ws.connect();
     await ws.subscribe(UpbitWsTransport.subscription([{ type: 'trade', codes: ['KRW-BTC'] }]));
   });
   console.log('[LIVE] Upbit REST + JWT + WS smoke test OK');
 }
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main().catch((e) => { console.error(e); process.exit(1); });

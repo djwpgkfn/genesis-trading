@@ -1,9 +1,4 @@
-export interface Reservation {
-  reservation_id: string;
-  request_id: string;
-  amount: number;
-  state: 'reserved' | 'consumed' | 'released';
-}
+export interface Reservation { reservation_id: string; request_id: string; amount: number; state: 'reserved' | 'consumed' | 'released' }
 
 /**
  * Risk Budget: Reservation → Consumption → Release. Invariant maintained at all times:
@@ -61,11 +56,6 @@ export class RiskBudget {
   }
 
   snapshot(): { total: number; reserved: number; consumed: number; available: number } {
-    return {
-      total: this.total,
-      reserved: this.reserved,
-      consumed: this.consumed,
-      available: this.available,
-    };
+    return { total: this.total, reserved: this.reserved, consumed: this.consumed, available: this.available };
   }
 }

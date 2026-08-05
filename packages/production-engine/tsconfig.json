@@ -3,10 +3,7 @@
   "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": ["node"] },
   "include": ["src"],
   "references": [
-    { "path": "../../contracts" },
-    { "path": "../invariant-runner" },
-    { "path": "../event-engine" },
-    { "path": "../risk-engine" },
-    { "path": "../portfolio-engine" }
+    { "path": "../../contracts" }, { "path": "../invariant-runner" }, { "path": "../event-engine" },
+    { "path": "../risk-engine" }, { "path": "../portfolio-engine" }
   ]
 }

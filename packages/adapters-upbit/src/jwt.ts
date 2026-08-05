@@ -8,10 +8,7 @@ export function queryHash(queryString: string): string {
   return createHash('sha512').update(queryString, 'utf8').digest('hex');
 }
 
-export interface UpbitKeys {
-  accessKey: string;
-  secretKey: string;
-}
+export interface UpbitKeys { accessKey: string; secretKey: string }
 
 /**
  * Real Upbit private-API JWT (HS256). Payload = access_key + nonce (+ query_hash for

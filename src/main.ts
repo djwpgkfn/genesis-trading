@@ -3,13 +3,7 @@ import 'dotenv/config';
 import { StructuredLogger } from '@genesis/ops';
 import { InMemoryRawStore, type RawStore } from '@genesis/data-layer';
 import { BufferedRawStore, ClickHouseRawStore } from '@genesis/adapters-db';
-import {
-  buildContainer,
-  checkUpbitPublic,
-  probeUpbitPrivate,
-  loadConfig,
-  systemClock,
-} from './container.js';
+import { buildContainer, checkUpbitPublic, probeUpbitPrivate, loadConfig, systemClock } from './container.js';
 import { WebSocketCollector } from './collector.js';
 
 /** Choose the Raw Store: durable ClickHouse (write-behind) if configured, else in-memory. */
@@ -17,11 +11,7 @@ function buildRawStore(logger: StructuredLogger): { store: RawStore; flush: () =
   const url = process.env['CLICKHOUSE_URL'];
   if (url) {
     const buffered = new BufferedRawStore(new ClickHouseRawStore(url), (e) =>
-      logger.warn(
-        'raw flush failed (will retry)',
-        {},
-        { error: e instanceof Error ? e.message : String(e) },
-      ),
+      logger.warn('raw flush failed (will retry)', {}, { error: e instanceof Error ? e.message : String(e) }),
     );
     logger.info('raw store: ClickHouse write-behind', {}, { url });
     return { store: buffered, flush: () => buffered.flush() };
@@ -45,11 +35,7 @@ async function main(): Promise<void> {
   try {
     await checkUpbitPublic(container);
   } catch (e) {
-    logger.error(
-      'upbit public REST unreachable',
-      {},
-      { error: e instanceof Error ? e.message : String(e) },
-    );
+    logger.error('upbit public REST unreachable', {}, { error: e instanceof Error ? e.message : String(e) });
     process.exit(1);
   }
   await probeUpbitPrivate(container);

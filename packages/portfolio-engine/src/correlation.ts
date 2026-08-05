@@ -1,23 +1,13 @@
 function pearson(a: readonly number[], b: readonly number[]): number {
   const n = Math.min(a.length, b.length);
   if (n === 0) return 0;
-  let sa = 0,
-    sb = 0;
+  let sa = 0, sb = 0;
+  for (let i = 0; i < n; i++) { sa += a[i]!; sb += b[i]!; }
+  const ma = sa / n, mb = sb / n;
+  let cov = 0, va = 0, vb = 0;
   for (let i = 0; i < n; i++) {
-    sa += a[i]!;
-    sb += b[i]!;
-  }
-  const ma = sa / n,
-    mb = sb / n;
-  let cov = 0,
-    va = 0,
-    vb = 0;
-  for (let i = 0; i < n; i++) {
-    const da = a[i]! - ma,
-      db = b[i]! - mb;
-    cov += da * db;
-    va += da * da;
-    vb += db * db;
+    const da = a[i]! - ma, db = b[i]! - mb;
+    cov += da * db; va += da * da; vb += db * db;
   }
   if (va === 0 || vb === 0) return 0;
   return cov / Math.sqrt(va * vb);

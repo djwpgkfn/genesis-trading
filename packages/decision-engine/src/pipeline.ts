@@ -1,11 +1,6 @@
 import { InMemoryEventStore, type EventStore, type EventInput } from '@genesis/event-engine';
 import { asUUID, asISOTimestamp, asCorrelationId, asSnapshotId } from '@genesis/contracts';
-import {
-  SignalEngine,
-  SignalEvents,
-  type MarketSnapshot,
-  type SignalSet,
-} from '@genesis/signal-engine';
+import { SignalEngine, SignalEvents, type MarketSnapshot, type SignalSet } from '@genesis/signal-engine';
 import { StrategyEngine, StrategyEvents, type StrategyDecision } from '@genesis/strategy-engine';
 import { DecisionEngine } from './engine.js';
 import { DecisionEvents } from './events.js';
@@ -36,23 +31,13 @@ export class TradingCore {
     return this.log;
   }
 
-  run(
-    snapshot: MarketSnapshot,
-    risk: RiskSnapshot,
-    portfolio: PortfolioSnapshot,
-  ): TradingCoreResult {
+  run(snapshot: MarketSnapshot, risk: RiskSnapshot, portfolio: PortfolioSnapshot): TradingCoreResult {
     const corr = `tc-${snapshot.timestamp_ms}`;
     const signals = this.signalEngine.generate(snapshot);
-    this.emit(SignalEvents.SignalCreated, corr, snapshot.symbol, {
-      count: signals.length,
-      signals,
-    });
+    this.emit(SignalEvents.SignalCreated, corr, snapshot.symbol, { count: signals.length, signals });
 
     const strategy = this.strategyEngine.select(signals);
-    this.emit(StrategyEvents.StrategySelected, corr, snapshot.symbol, {
-      active: strategy.active,
-      selected: strategy.selected,
-    });
+    this.emit(StrategyEvents.StrategySelected, corr, snapshot.symbol, { active: strategy.active, selected: strategy.selected });
 
     let decision: Decision | null = null;
     if (signals.length > 0) {

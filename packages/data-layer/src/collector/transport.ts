@@ -1,8 +1,5 @@
 /** Transport abstraction so the collector is testable with a fake and bindable to Upbit. */
-export interface WsMessage {
-  data: unknown;
-  received_ms: number;
-}
+export interface WsMessage { data: unknown; received_ms: number }
 
 export interface WsTransport {
   connect(): Promise<void>;

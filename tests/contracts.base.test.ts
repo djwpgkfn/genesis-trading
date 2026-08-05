@@ -1,15 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  asUUID,
-  asHash,
-  asISOTimestamp,
-  asVersion,
-  asSnapshotId,
-  asCorrelationId,
+  asUUID, asHash, asISOTimestamp, asVersion, asSnapshotId, asCorrelationId,
   CONTRACTS_SCHEMA_VERSION,
-  type EventEnvelope,
-  type ProductionSnapshot,
-  type DecisionRecord,
+  type EventEnvelope, type ProductionSnapshot, type DecisionRecord,
 } from '@genesis/contracts';
 
 describe('contracts base', () => {

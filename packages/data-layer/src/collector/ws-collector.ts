@@ -3,10 +3,10 @@ import type { RawRecord } from '../types.js';
 import type { WsMessage, WsTransport } from './transport.js';
 
 export interface CollectorOptions {
-  subscribe: unknown; // exchange subscription payload
+  subscribe: unknown;                 // exchange subscription payload
   parse: (m: WsMessage) => RawRecord | null; // exchange-specific decode → raw record
-  now: () => number; // injected clock (determinism; no Date.now in logic)
-  heartbeatMs?: number; // idle guard (Upbit disconnects ~120s)
+  now: () => number;                  // injected clock (determinism; no Date.now in logic)
+  heartbeatMs?: number;               // idle guard (Upbit disconnects ~120s)
   maxBackoffMs?: number;
 }
 

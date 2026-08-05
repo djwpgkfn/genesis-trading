@@ -6,14 +6,8 @@ import { asUUID, asISOTimestamp, asSnapshotId, asCorrelationId } from '@genesis/
 const iso = (ms: number) => asISOTimestamp(new Date(ms).toISOString());
 const ev = (type: string, n: number, snap = false): EventInput => {
   const b: EventInput = {
-    event_id: asUUID(`e${n}`),
-    event_type: type,
-    event_time: iso(n * 1000),
-    ingest_time: iso(n * 1000),
-    source_engine: 't',
-    schema_version: 1,
-    correlation_id: asCorrelationId('c1'),
-    payload: { action: 'buy', reason: 'x' },
+    event_id: asUUID(`e${n}`), event_type: type, event_time: iso(n * 1000), ingest_time: iso(n * 1000),
+    source_engine: 't', schema_version: 1, correlation_id: asCorrelationId('c1'), payload: { action: 'buy', reason: 'x' },
   };
   return snap ? { ...b, snapshot_id: asSnapshotId('s1') } : b;
 };

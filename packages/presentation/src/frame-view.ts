@@ -2,18 +2,10 @@ import type { RecordedFrame } from '@genesis/replay-engine';
 import { decisionViewModel, type DecisionViewModel } from './viewmodels/decision-vm.js';
 import { signalViewModels, type SignalViewModel } from './viewmodels/signal-vm.js';
 import { strategyViewModel, type StrategyViewModel } from './viewmodels/strategy-vm.js';
-import {
-  explainabilityViewModel,
-  type ExplainabilityViewModel,
-} from './viewmodels/explainability-vm.js';
+import { explainabilityViewModel, type ExplainabilityViewModel } from './viewmodels/explainability-vm.js';
 import { decisionHistory, type DecisionHistoryItem } from './viewmodels/replay-vm.js';
 
-export interface MarketView {
-  symbol: string;
-  timeframe: string;
-  price: number | null;
-  candle_time: string;
-}
+export interface MarketView { symbol: string; timeframe: string; price: number | null; candle_time: string }
 export interface FrameView {
   index: number;
   market: MarketView;
@@ -22,10 +14,7 @@ export interface FrameView {
   decision: DecisionViewModel;
   explainability: ExplainabilityViewModel;
 }
-export interface SessionView {
-  frames: FrameView[];
-  history: DecisionHistoryItem[];
-}
+export interface SessionView { frames: FrameView[]; history: DecisionHistoryItem[] }
 
 /** Pure mapper: a recorded frame → fully display-ready FrameView (no engine at consume time). */
 export function frameView(frame: RecordedFrame): FrameView {

@@ -37,12 +37,7 @@ export class AILayer {
   }
 
   /** A sub-AI drafts a proposal (Draft). */
-  propose(
-    kind: ProposalKind,
-    input_refs: string[],
-    model_version = 'm1',
-    prompt_version = 'p1',
-  ): AIProposal {
+  propose(kind: ProposalKind, input_refs: string[], model_version = 'm1', prompt_version = 'p1'): AIProposal {
     const agent = SUB_AIS.find((a) => a.kind === kind);
     if (!agent) throw new Error(`no agent for ${kind}`);
     const id = `prop-${++this.n}`;
@@ -57,8 +52,7 @@ export class AILayer {
   transition(id: string, to: ProposalStatus): AIProposal {
     const p = this.proposals.get(id);
     if (!p) throw new Error(`unknown proposal ${id}`);
-    if (!canTransition(p.status, to))
-      throw new Error(`invalid proposal transition ${p.status} → ${to}`);
+    if (!canTransition(p.status, to)) throw new Error(`invalid proposal transition ${p.status} → ${to}`);
     const updated = { ...p, status: to };
     this.proposals.set(id, updated);
     this.emit(AIEventTypes.ProposalTransitioned, id, { from: p.status, to });
@@ -74,10 +68,7 @@ export class AILayer {
       throw new Error('only validated/approved proposals can be frozen');
     }
     const artifact = freezeProposal(p, artifact_version);
-    this.emit(AIEventTypes.ArtifactFrozen, id, {
-      artifact_id: artifact.artifact_id,
-      hash: artifact.content_hash,
-    });
+    this.emit(AIEventTypes.ArtifactFrozen, id, { artifact_id: artifact.artifact_id, hash: artifact.content_hash });
     return artifact;
   }
 
@@ -88,23 +79,15 @@ export class AILayer {
 
   /** Report generation (category B — no decision impact). */
   generateReport(content: unknown, decisionRecordId?: string): void {
-    this.emit(AIEventTypes.ReportGenerated, 'report', {
-      content,
-      decision_record_id: decisionRecordId ?? null,
-    });
+    this.emit(AIEventTypes.ReportGenerated, 'report', { content, decision_record_id: decisionRecordId ?? null });
   }
 
   private emit(type: string, corr: string, payload: unknown): void {
     const input: EventInput = {
-      event_id: asUUID(`ai-${type}-${corr}-${this.log.count() + 1}`),
-      event_type: type,
-      event_time: asISOTimestamp(this.now()),
-      ingest_time: asISOTimestamp(this.now()),
-      source_engine: 'ai-layer',
-      schema_version: 1,
-      correlation_id: asCorrelationId(corr),
-      snapshot_id: asSnapshotId('ai'),
-      payload,
+      event_id: asUUID(`ai-${type}-${corr}-${this.log.count() + 1}`), event_type: type,
+      event_time: asISOTimestamp(this.now()), ingest_time: asISOTimestamp(this.now()),
+      source_engine: 'ai-layer', schema_version: 1,
+      correlation_id: asCorrelationId(corr), snapshot_id: asSnapshotId('ai'), payload,
     };
     this.log.append(input);
   }

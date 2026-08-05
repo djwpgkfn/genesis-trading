@@ -11,16 +11,8 @@ describe('gap detection', () => {
   });
   it('finds missing candle windows', () => {
     const c = (open: number): Candle => ({
-      symbol: 'KRW-BTC',
-      tf: '1m',
-      open_time_ms: open,
-      open: 1,
-      high: 1,
-      low: 1,
-      close: 1,
-      volume: 0,
-      acc_price: 0,
-      source: 'reconstructed',
+      symbol: 'KRW-BTC', tf: '1m', open_time_ms: open, open: 1, high: 1, low: 1, close: 1,
+      volume: 0, acc_price: 0, source: 'reconstructed',
     });
     const gaps = detectCandleGaps([c(0), c(60_000), c(180_000)], '1m');
     expect(gaps).toEqual([{ from_open_ms: 60_000, to_open_ms: 180_000, missing: 1 }]);

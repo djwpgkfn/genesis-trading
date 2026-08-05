@@ -7,10 +7,7 @@ export function symbolExposure(positions: readonly Position[], symbol: string): 
   return positions.filter((p) => p.symbol === symbol).reduce((a, p) => a + Math.abs(p.notional), 0);
 }
 
-export interface ExposureCheck {
-  ok: boolean;
-  reason: string;
-}
+export interface ExposureCheck { ok: boolean; reason: string }
 export function checkExposure(
   positions: readonly Position[],
   symbol: string,

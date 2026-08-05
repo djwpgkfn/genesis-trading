@@ -2,12 +2,7 @@ import type { StrategyDecision } from '@genesis/strategy-engine';
 
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
 
-export interface StrategyScoreView {
-  name: string;
-  score: string;
-  confidence_pct: string;
-  reason: string[];
-}
+export interface StrategyScoreView { name: string; score: string; confidence_pct: string; reason: string[] }
 export interface StrategyViewModel {
   active: string;
   selected: string[];

@@ -1,12 +1,6 @@
 export type StrategyName =
-  | 'trend-following'
-  | 'mean-reversion'
-  | 'breakout'
-  | 'scalping'
-  | 'swing'
-  | 'range'
-  | 'momentum'
-  | 'volatility';
+  | 'trend-following' | 'mean-reversion' | 'breakout' | 'scalping'
+  | 'swing' | 'range' | 'momentum' | 'volatility';
 
 export interface StrategyScore {
   name: StrategyName;

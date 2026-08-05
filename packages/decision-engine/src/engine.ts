@@ -1,12 +1,6 @@
 import type { Signal } from '@genesis/signal-engine';
 import type { StrategyDecision } from '@genesis/strategy-engine';
-import type {
-  Decision,
-  DecisionAction,
-  DecisionTrace,
-  PortfolioSnapshot,
-  RiskSnapshot,
-} from './types.js';
+import type { Decision, DecisionAction, DecisionTrace, PortfolioSnapshot, RiskSnapshot } from './types.js';
 
 const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
@@ -64,9 +58,7 @@ export class DecisionEngine {
 
     const confidence = clamp01(stratConf * (0.5 + magnitude / 2));
     const volStrength = signals.find((s) => s.name === 'VOLATILITY_HIGH')?.strength ?? 0;
-    const expected_risk = clamp01(
-      0.5 * (portfolio.exposure / (portfolio.max_exposure || 1)) + 0.5 * volStrength,
-    );
+    const expected_risk = clamp01(0.5 * (portfolio.exposure / (portfolio.max_exposure || 1)) + 0.5 * volStrength);
     const expected_reward = clamp01(magnitude * stratConf);
 
     const signalUsed = signals
@@ -82,18 +74,10 @@ export class DecisionEngine {
       confidence,
       steps: [
         { stage: 'decision', detail: action, refs: [reason] },
-        {
-          stage: 'strategy',
-          detail: `${strategy.active} (score ${activeScore?.score.toFixed(2) ?? '0'})`,
-          refs: activeScore?.reason ?? [],
-        },
+        { stage: 'strategy', detail: `${strategy.active} (score ${activeScore?.score.toFixed(2) ?? '0'})`, refs: activeScore?.reason ?? [] },
         { stage: 'signals', detail: `${signals.length} signals`, refs: signals.map((s) => s.id) },
         { stage: 'features', detail: `${features.length} basis features`, refs: features },
-        {
-          stage: 'confidence',
-          detail: `${(confidence * 100).toFixed(0)}%`,
-          refs: [`stratConf=${stratConf.toFixed(2)}`, `net=${net.toFixed(2)}`],
-        },
+        { stage: 'confidence', detail: `${(confidence * 100).toFixed(0)}%`, refs: [`stratConf=${stratConf.toFixed(2)}`, `net=${net.toFixed(2)}`] },
       ],
     };
 

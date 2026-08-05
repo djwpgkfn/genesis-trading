@@ -1,19 +1,9 @@
 export type DecisionAction = 'BUY' | 'SELL' | 'HOLD' | 'WAIT';
 
-export interface RiskSnapshot {
-  budget_available: number;
-  halted: boolean;
-}
-export interface PortfolioSnapshot {
-  exposure: number;
-  max_exposure: number;
-}
+export interface RiskSnapshot { budget_available: number; halted: boolean }
+export interface PortfolioSnapshot { exposure: number; max_exposure: number }
 
-export interface DecisionTraceStep {
-  stage: string;
-  detail: string;
-  refs: string[];
-}
+export interface DecisionTraceStep { stage: string; detail: string; refs: string[] }
 export interface DecisionTrace {
   action: DecisionAction;
   strategy: string;

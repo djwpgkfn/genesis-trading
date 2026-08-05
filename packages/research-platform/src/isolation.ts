@@ -3,15 +3,8 @@
  * account port anywhere in this package, so real-account access is impossible by construction —
  * not by policy. The type system offers only VirtualExecution.
  */
-export interface Order {
-  symbol: string;
-  qty: number;
-  price: number;
-}
-export interface Fill {
-  filled: number;
-  price: number;
-}
+export interface Order { symbol: string; qty: number; price: number }
+export interface Fill { filled: number; price: number }
 
 export interface VirtualExecution {
   readonly mode: 'virtual';

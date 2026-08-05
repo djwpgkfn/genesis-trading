@@ -27,9 +27,7 @@ export class PortfolioEngine {
 
     const allocations: Allocation[] = [];
     let totalNotional = 0;
-    for (const [symbol, weight] of [...weights.entries()].sort((a, b) =>
-      a[0].localeCompare(b[0]),
-    )) {
+    for (const [symbol, weight] of [...weights.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
       const notional = weight * input.budget.total;
       allocations.push({ symbol, weight, notional });
       totalNotional += notional;
@@ -38,18 +36,12 @@ export class PortfolioEngine {
     // Hard clip: never exceed Risk available budget (INV-R5).
     if (totalNotional > input.budget.available && totalNotional > 0) {
       const scale = input.budget.available / totalNotional;
-      for (const a of allocations) {
-        a.weight *= scale;
-        a.notional *= scale;
-      }
+      for (const a of allocations) { a.weight *= scale; a.notional *= scale; }
       totalNotional = input.budget.available;
     }
     for (const e of explain) {
       const a = allocations.find((x) => x.symbol === e.symbol);
-      if (a) {
-        e.final_weight = a.weight;
-        e.notional = a.notional;
-      }
+      if (a) { e.final_weight = a.weight; e.notional = a.notional; }
     }
 
     const plan: PortfolioPlan = {

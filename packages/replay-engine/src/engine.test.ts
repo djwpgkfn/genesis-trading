@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  InMemoryEventStore,
-  EventTypes,
-  ProjectionEngine,
-  type EventInput,
-  type Projection,
-} from '@genesis/event-engine';
+import { InMemoryEventStore, EventTypes, ProjectionEngine, type EventInput, type Projection } from '@genesis/event-engine';
 import { asUUID, asISOTimestamp, asCorrelationId, asSnapshotId } from '@genesis/contracts';
 import { ReplayEngine } from './engine.js';
 import { replayAuditProjection, buildAuditReport } from './audit.js';
@@ -13,21 +7,10 @@ import { replayAuditProjection, buildAuditReport } from './audit.js';
 const iso = (ms: number) => asISOTimestamp(new Date(ms).toISOString());
 function seed(): InMemoryEventStore {
   const s = new InMemoryEventStore();
-  const mk = (
-    n: number,
-    type: string,
-    snap = false,
-    payload: unknown = { action: 'buy', reason: 'x' },
-  ): EventInput => {
+  const mk = (n: number, type: string, snap = false, payload: unknown = { action: 'buy', reason: 'x' }): EventInput => {
     const b: EventInput = {
-      event_id: asUUID(`e${n}`),
-      event_type: type,
-      event_time: iso(n * 1000),
-      ingest_time: iso(n * 1000),
-      source_engine: 't',
-      schema_version: 1,
-      correlation_id: asCorrelationId('c1'),
-      payload,
+      event_id: asUUID(`e${n}`), event_type: type, event_time: iso(n * 1000), ingest_time: iso(n * 1000),
+      source_engine: 't', schema_version: 1, correlation_id: asCorrelationId('c1'), payload,
     };
     return snap ? { ...b, snapshot_id: asSnapshotId('s1') } : b;
   };
@@ -36,12 +19,7 @@ function seed(): InMemoryEventStore {
   s.append(mk(3, EventTypes.DecisionOutcome, true, { action: 'buy', reason: 'ok' }));
   return s;
 }
-const counter: Projection<number> = {
-  name: 'c',
-  version: '1',
-  initial: () => 0,
-  apply: (s) => s + 1,
-};
+const counter: Projection<number> = { name: 'c', version: '1', initial: () => 0, apply: (s) => s + 1 };
 
 describe('ReplayEngine', () => {
   it('reproduces identical state hash + decisions (INV-D2)', () => {
@@ -60,11 +38,7 @@ describe('ReplayEngine', () => {
   it('supports as-of point-in-time replay', () => {
     const src = seed();
     const eng = new ReplayEngine(src, new InMemoryEventStore());
-    const s = eng.createSession({
-      snapshot_id: 'snap',
-      replay_reason: 'research',
-      asOfEventMs: 2000,
-    });
+    const s = eng.createSession({ snapshot_id: 'snap', replay_reason: 'research', asOfEventMs: 2000 });
     eng.runToEnd(s);
     expect(s.appliedEvents.map((e) => e.seq)).toEqual([1, 2]); // event at 3000 excluded
   });
