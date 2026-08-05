@@ -30,7 +30,8 @@ export class BufferedRawStore implements RawStore {
   asOf(asOfEventMs: number, asOfIngestMs?: number): readonly RawRecord[] {
     return this.hot.filter(
       (r) =>
-        r.event_time_ms <= asOfEventMs && (asOfIngestMs === undefined || r.ingest_time_ms <= asOfIngestMs),
+        r.event_time_ms <= asOfEventMs &&
+        (asOfIngestMs === undefined || r.ingest_time_ms <= asOfIngestMs),
     );
   }
 

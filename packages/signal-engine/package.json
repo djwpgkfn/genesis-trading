@@ -4,6 +4,10 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": { "build": "tsc -b" },
-  "dependencies": { "@genesis/invariant-runner": "*" }
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@genesis/invariant-runner": "*"
+  }
 }

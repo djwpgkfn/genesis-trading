@@ -9,7 +9,14 @@ function uptrendSnapshot(k: number): MarketSnapshot {
   const base = 100 + k * 5;
   const candles = Array.from({ length: 40 }, (_, i) => {
     const close = base + i * 1.5;
-    return { open: close - 1, high: close + 1, low: close - 1, close, volume: 10 + (i % 4) * 5, time_ms: (k * 40 + i) * 60000 };
+    return {
+      open: close - 1,
+      high: close + 1,
+      low: close - 1,
+      close,
+      volume: 10 + (i % 4) * 5,
+      time_ms: (k * 40 + i) * 60000,
+    };
   });
   return { symbol: 'KRW-BTC', timestamp_ms: (k * 40 + 40) * 60000, candles };
 }

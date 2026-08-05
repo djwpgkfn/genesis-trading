@@ -2,10 +2,20 @@ import type { CheckResult } from '@genesis/invariant-runner';
 import { RiskEngine } from './engine.js';
 import type { Limits, Position, TradeRequest } from './types.js';
 
-const limits: Limits = { maxTotalExposure: 1000, maxSymbolExposure: 600, maxDrawdownPct: 0.2, trailingPct: 0.1 };
+const limits: Limits = {
+  maxTotalExposure: 1000,
+  maxSymbolExposure: 600,
+  maxDrawdownPct: 0.2,
+  trailingPct: 0.1,
+};
 const eq = { peak: 100, current: 100 };
 const noPos: Position[] = [];
-const req = (id: string, notional = 100): TradeRequest => ({ request_id: id, symbol: 'KRW-BTC', side: 'buy', notional });
+const req = (id: string, notional = 100): TradeRequest => ({
+  request_id: id,
+  symbol: 'KRW-BTC',
+  side: 'buy',
+  notional,
+});
 function running(total = 1000): RiskEngine {
   const e = new RiskEngine({ total_budget: total, limits });
   e.init();
@@ -41,7 +51,12 @@ function checkR3(): CheckResult {
   const e = running();
   e.emergencyHalt('x');
   let direct = false;
-  try { e.start(); direct = true; } catch { /* invalid transition expected */ }
+  try {
+    e.start();
+    direct = true;
+  } catch {
+    /* invalid transition expected */
+  }
   e.startRecovery(() => true); // → READY
   e.start(); // READY → RUN
   return !direct && e.state() === 'RUN'
@@ -56,13 +71,18 @@ function checkR4R5(): CheckResult {
   const b = e.preTradeCheck(req('b', 100), noPos, eq); // would exceed 150 → rejected
   const snap = e.budgetSnapshot();
   const ok = a.approved && !b.approved && snap.reserved + snap.consumed <= snap.total;
-  return ok ? { id: 'INV-R4', status: 'pass' } : { id: 'INV-R4', status: 'fail', detail: JSON.stringify(snap) };
+  return ok
+    ? { id: 'INV-R4', status: 'pass' }
+    : { id: 'INV-R4', status: 'fail', detail: JSON.stringify(snap) };
 }
 
 /** INV-R6: position reconcile mismatch → HALT. */
 function checkR6(): CheckResult {
   const e = running();
-  e.reconcile([{ symbol: 'KRW-BTC', qty: 1, notional: 100 }], [{ symbol: 'KRW-BTC', qty: 2, notional: 200 }]);
+  e.reconcile(
+    [{ symbol: 'KRW-BTC', qty: 1, notional: 100 }],
+    [{ symbol: 'KRW-BTC', qty: 2, notional: 200 }],
+  );
   return e.state() === 'HALT' ? { id: 'INV-R6', status: 'pass' } : { id: 'INV-R6', status: 'fail' };
 }
 
@@ -81,7 +101,12 @@ function checkR7(): CheckResult {
 function checkR8(): CheckResult {
   const e = new RiskEngine({ total_budget: 1000, limits });
   let cold = false;
-  try { e.start(); cold = true; } catch { /* INIT→RUN invalid */ }
+  try {
+    e.start();
+    cold = true;
+  } catch {
+    /* INIT→RUN invalid */
+  }
   return !cold && e.state() === 'INIT'
     ? { id: 'INV-R8', status: 'pass' }
     : { id: 'INV-R8', status: 'fail' };
@@ -90,9 +115,17 @@ function checkR8(): CheckResult {
 /** INV-S1: invalid transitions rejected; state event-sourced. */
 function checkS1(): CheckResult {
   const e = running();
-  const recorded = e.eventLog().all().some((ev) => ev.event_type === 'State.transitioned');
+  const recorded = e
+    .eventLog()
+    .all()
+    .some((ev) => ev.event_type === 'State.transitioned');
   let invalid = false;
-  try { (e as unknown as { sm: { transition: (s: string) => void } }).sm.transition('FROZEN'); invalid = true; } catch { /* RUN→FROZEN invalid */ }
+  try {
+    (e as unknown as { sm: { transition: (s: string) => void } }).sm.transition('FROZEN');
+    invalid = true;
+  } catch {
+    /* RUN→FROZEN invalid */
+  }
   return recorded && !invalid ? { id: 'INV-S1', status: 'pass' } : { id: 'INV-S1', status: 'fail' };
 }
 

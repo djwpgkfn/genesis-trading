@@ -25,7 +25,10 @@ describe('AI Layer (advisory, structurally isolated)', () => {
     ai.transition(p.proposal_id, 'candidate');
     ai.transition(p.proposal_id, 'validated');
     ai.transition(p.proposal_id, 'approved');
-    const types = ai.eventLog().all().map((e) => e.event_type);
+    const types = ai
+      .eventLog()
+      .all()
+      .map((e) => e.event_type);
     expect(types).toContain('AI.proposalCreated');
     expect(types).toContain('AI.proposalValidated');
     expect(ai.eventLog().verifyChain()).toBe(true);

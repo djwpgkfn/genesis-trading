@@ -1,9 +1,35 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": ["node"] },
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
   "include": ["src"],
   "references": [
-    { "path": "../../contracts" }, { "path": "../invariant-runner" }, { "path": "../event-engine" },
-    { "path": "../replay-engine" }, { "path": "../decision-engine" }, { "path": "../presentation" }
+    {
+      "path": "../../contracts"
+    },
+    {
+      "path": "../invariant-runner"
+    },
+    {
+      "path": "../event-engine"
+    },
+    {
+      "path": "../replay-engine"
+    },
+    {
+      "path": "../decision-engine"
+    },
+    {
+      "path": "../presentation"
+    },
+    {
+      "path": "../signal-engine"
+    },
+    {
+      "path": "../data-layer"
+    }
   ]
 }

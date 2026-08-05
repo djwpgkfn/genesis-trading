@@ -18,7 +18,13 @@ const input = (available: number, total = 1000): PortfolioInput => ({
     'KRW-XRP': [-0.02, 0.03, -0.01, 0.02],
   },
   budget: { total, available },
-  constraints: { maxWeightPerSymbol: 0.2, maxCorrelationGroupExposure: 0.35, kellyFraction: 0.25, correlationThreshold: 0.8, maxTotalUtilization: 0.6 },
+  constraints: {
+    maxWeightPerSymbol: 0.2,
+    maxCorrelationGroupExposure: 0.35,
+    kellyFraction: 0.25,
+    correlationThreshold: 0.8,
+    maxTotalUtilization: 0.6,
+  },
 });
 
 describe('Portfolio Engine (survival objective)', () => {
@@ -50,7 +56,12 @@ describe('Portfolio Engine (survival objective)', () => {
     const a = eng.optimize(input(1000));
     const b = new PortfolioEngine().optimize(input(1000));
     expect(a.allocations).toEqual(b.allocations);
-    expect(eng.eventLog().all().some((e) => e.event_type === 'Portfolio.planned')).toBe(true);
+    expect(
+      eng
+        .eventLog()
+        .all()
+        .some((e) => e.event_type === 'Portfolio.planned'),
+    ).toBe(true);
     expect(eng.eventLog().verifyChain()).toBe(true);
   });
 

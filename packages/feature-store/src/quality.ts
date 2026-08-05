@@ -1,12 +1,7 @@
 import { detectSeqGaps } from '@genesis/data-layer';
 import type { RawRecord } from '@genesis/data-layer';
 
-export type QualityState =
-  | 'Complete'
-  | 'GapDetected'
-  | 'RestFilled'
-  | 'OutOfOrder'
-  | 'Duplicated';
+export type QualityState = 'Complete' | 'GapDetected' | 'RestFilled' | 'OutOfOrder' | 'Duplicated';
 
 export interface QualityReport {
   states: ReadonlySet<QualityState>;
@@ -22,7 +17,10 @@ export interface AssessOptions {
 }
 
 /** Classify raw input quality (operates on records in arrival order). */
-export function assessQuality(records: readonly RawRecord[], opts: AssessOptions = {}): QualityReport {
+export function assessQuality(
+  records: readonly RawRecord[],
+  opts: AssessOptions = {},
+): QualityReport {
   const seen = new Set<number>();
   let duplicates = 0;
   let outOfOrder = 0;

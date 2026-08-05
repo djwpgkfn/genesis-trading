@@ -35,7 +35,8 @@ ReplaySession -> Presentation ViewModels -> apps/dashboard panels (read-only)
 
 Dependency DAG (one-way): decision-engine -> replay-engine -> presentation -> dashboard.
 The dashboard has no path to any Execution Gateway (enforced by A-category invariant
-+ dependency-boundary check).
+
+- dependency-boundary check).
 
 ## 3. Replay State Machine
 

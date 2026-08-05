@@ -12,7 +12,11 @@ import type { FeatureSet } from './types.js';
 const v1 = '1.0.0' as Version;
 const iso = (ms: number) => new Date(ms).toISOString();
 
-function fixture(): { registry: FeatureDefinitionRegistry; store: InMemoryRawStore; set: FeatureSet } {
+function fixture(): {
+  registry: FeatureDefinitionRegistry;
+  store: InMemoryRawStore;
+  set: FeatureSet;
+} {
   const registry = new FeatureDefinitionRegistry();
   for (const f of SAMPLE_FEATURES) registry.register(f);
   const store = new InMemoryRawStore();
@@ -23,14 +27,22 @@ function fixture(): { registry: FeatureDefinitionRegistry; store: InMemoryRawSto
   ];
   for (const t of trades) {
     const r: RawRecord = {
-      kind: 'trade', symbol: t.symbol,
+      kind: 'trade',
+      symbol: t.symbol,
       event_time: iso(t.event_time_ms) as RawRecord['event_time'],
       ingest_time: iso(t.event_time_ms) as RawRecord['ingest_time'],
-      event_time_ms: t.event_time_ms, ingest_time_ms: t.event_time_ms, seq: t.seq, payload: t,
+      event_time_ms: t.event_time_ms,
+      ingest_time_ms: t.event_time_ms,
+      seq: t.seq,
+      payload: t,
     };
     store.append(r);
   }
-  const set: FeatureSet = { id: 'sample', version: v1, features: [{ id: 'range_pct_1m', version: v1 }] };
+  const set: FeatureSet = {
+    id: 'sample',
+    version: v1,
+    features: [{ id: 'range_pct_1m', version: v1 }],
+  };
   return { registry, store, set };
 }
 

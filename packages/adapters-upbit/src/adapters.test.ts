@@ -24,10 +24,23 @@ describe('Upbit JWT (real crypto)', () => {
 describe('Upbit REST mapping', () => {
   it('maps a candle response to the S1 Candle type', () => {
     const c = mapCandle('KRW-BTC', '1m', {
-      candle_date_time_utc: '2026-07-28T00:00:00', opening_price: 100, high_price: 120,
-      low_price: 90, trade_price: 110, candle_acc_trade_volume: 5, candle_acc_trade_price: 550,
+      candle_date_time_utc: '2026-07-28T00:00:00',
+      opening_price: 100,
+      high_price: 120,
+      low_price: 90,
+      trade_price: 110,
+      candle_acc_trade_volume: 5,
+      candle_acc_trade_price: 550,
     });
-    expect(c).toMatchObject({ symbol: 'KRW-BTC', tf: '1m', open: 100, high: 120, low: 90, close: 110, source: 'rest' });
+    expect(c).toMatchObject({
+      symbol: 'KRW-BTC',
+      tf: '1m',
+      open: 100,
+      high: 120,
+      low: 90,
+      close: 110,
+      source: 'rest',
+    });
   });
 });
 

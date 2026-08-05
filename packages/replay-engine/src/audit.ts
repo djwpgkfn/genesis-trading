@@ -26,13 +26,27 @@ export const replayAuditProjection: Projection<ReplayAudit> = {
     const p = e.payload as Record<string, unknown>;
     switch (e.event_type) {
       case ReplayEventTypes.Started:
-        return { ...s, session_id: String(p['session_id']), snapshot_id: String(p['snapshot_id']),
-          fromSeq: Number(p['fromSeq']), toSeq: Number(p['toSeq']), replay_reason: String(p['replay_reason']) };
-      case ReplayEventTypes.Paused: return { ...s, pauses: s.pauses + 1 };
-      case ReplayEventTypes.Resumed: return { ...s, resumes: s.resumes + 1 };
-      case ReplayEventTypes.Seeked: return { ...s, seeks: s.seeks + 1 };
+        return {
+          ...s,
+          session_id: String(p['session_id']),
+          snapshot_id: String(p['snapshot_id']),
+          fromSeq: Number(p['fromSeq']),
+          toSeq: Number(p['toSeq']),
+          replay_reason: String(p['replay_reason']),
+        };
+      case ReplayEventTypes.Paused:
+        return { ...s, pauses: s.pauses + 1 };
+      case ReplayEventTypes.Resumed:
+        return { ...s, resumes: s.resumes + 1 };
+      case ReplayEventTypes.Seeked:
+        return { ...s, seeks: s.seeks + 1 };
       case ReplayEventTypes.Finished:
-        return { ...s, finished: true, final_state_hash: String(p['final_state_hash']), applied: Number(p['applied']) };
+        return {
+          ...s,
+          finished: true,
+          final_state_hash: String(p['final_state_hash']),
+          applied: Number(p['applied']),
+        };
       case ReplayEventTypes.Failed:
         return { ...s, failed: true, error: String(p['error']) };
       default:

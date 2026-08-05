@@ -1,5 +1,13 @@
 import type { DecisionRecord, DecisionAction } from '@genesis/contracts';
-import { asUUID, asHash, asISOTimestamp, asSnapshotId, asCorrelationId, asVersion, CONTRACTS_SCHEMA_VERSION } from '@genesis/contracts';
+import {
+  asUUID,
+  asHash,
+  asISOTimestamp,
+  asSnapshotId,
+  asCorrelationId,
+  asVersion,
+  CONTRACTS_SCHEMA_VERSION,
+} from '@genesis/contracts';
 import { contentHash } from './hash.js';
 import { EventTypes, type StoredEvent } from './events.js';
 

@@ -27,7 +27,9 @@ export function rsi(closes: readonly number[], period = 14): number | null {
   return 100 - 100 / (1 + rs);
 }
 
-export function macd(closes: readonly number[]): { macd: number; signal: number; hist: number } | null {
+export function macd(
+  closes: readonly number[],
+): { macd: number; signal: number; hist: number } | null {
   const e12 = ema(closes, 12);
   const e26 = ema(closes, 26);
   if (e12 === null || e26 === null) return null;
@@ -43,7 +45,11 @@ export function macd(closes: readonly number[]): { macd: number; signal: number;
   return { macd: macdLine, signal, hist: macdLine - signal };
 }
 
-export function bollinger(closes: readonly number[], period = 20, mult = 2): { mid: number; upper: number; lower: number } | null {
+export function bollinger(
+  closes: readonly number[],
+  period = 20,
+  mult = 2,
+): { mid: number; upper: number; lower: number } | null {
   const mid = sma(closes, period);
   if (mid === null) return null;
   const slice = closes.slice(closes.length - period);

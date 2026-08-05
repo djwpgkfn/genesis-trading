@@ -1,4 +1,8 @@
-export interface InvariantReport { passed: number; total: number; failing: string[] }
+export interface InvariantReport {
+  passed: number;
+  total: number;
+  failing: string[];
+}
 export interface InvariantViewModel {
   passed: number;
   total: number;

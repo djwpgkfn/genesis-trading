@@ -1,7 +1,12 @@
 import type { ExchangeAdapter, Order, Fill } from '@genesis/production-engine';
 import { UpbitRestClient } from './rest.js';
 
-interface UpbitOrderResponse { uuid: string; executed_volume?: string; price?: string; state?: string }
+interface UpbitOrderResponse {
+  uuid: string;
+  executed_volume?: string;
+  price?: string;
+  state?: string;
+}
 
 /**
  * Real Upbit Exchange Adapter — the single external order path (used ONLY behind the S8 Execution
@@ -30,8 +35,9 @@ export class UpbitExchangeAdapter implements ExchangeAdapter {
       ord_type: order.side === 'buy' ? 'price' : 'market',
       identifier: order.client_order_id, // idempotency at exchange level
     };
-    if (order.side === 'buy') params['price'] = order.notional;      // KRW to spend
-    else params['volume'] = order.notional;                          // qty to sell (mapped upstream)
+    if (order.side === 'buy')
+      params['price'] = order.notional; // KRW to spend
+    else params['volume'] = order.notional; // qty to sell (mapped upstream)
     return this.rest.privatePost<UpbitOrderResponse>('/v1/orders', params);
   }
 }

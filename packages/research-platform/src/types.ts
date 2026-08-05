@@ -1,10 +1,22 @@
 export type ExperimentMode = 'backtest' | 'wfv' | 'paper' | 'shadow';
 export type ExperimentStatus = 'created' | 'running' | 'completed' | 'failed';
 
-export interface Period { start: number; end: number } // event_time ms
-export interface Provenance { created_by: string; method_version: string; created_at: string }
+export interface Period {
+  start: number;
+  end: number;
+} // event_time ms
+export interface Provenance {
+  created_by: string;
+  method_version: string;
+  created_at: string;
+}
 
-export interface FoldResult { start: number; end: number; passed: boolean; metrics: Record<string, number> }
+export interface FoldResult {
+  start: number;
+  end: number;
+  passed: boolean;
+  metrics: Record<string, number>;
+}
 
 export interface ExperimentResult {
   metrics: Record<string, number>;

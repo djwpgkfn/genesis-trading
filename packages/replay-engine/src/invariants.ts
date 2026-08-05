@@ -11,14 +11,23 @@ function seed(): InMemoryEventStore {
   const s = new InMemoryEventStore();
   const mk = (n: number, type: string, snap = false): EventInput => {
     const b: EventInput = {
-      event_id: asUUID(`e${n}`), event_type: type, event_time: iso(n * 1000), ingest_time: iso(n * 1000),
-      source_engine: 't', schema_version: 1, correlation_id: asCorrelationId('c1'), payload: { action: 'buy', reason: 'x' },
+      event_id: asUUID(`e${n}`),
+      event_type: type,
+      event_time: iso(n * 1000),
+      ingest_time: iso(n * 1000),
+      source_engine: 't',
+      schema_version: 1,
+      correlation_id: asCorrelationId('c1'),
+      payload: { action: 'buy', reason: 'x' },
     };
     return snap ? { ...b, snapshot_id: asSnapshotId('s1') } : b;
   };
   s.append(mk(1, EventTypes.MarketTrade));
   s.append(mk(2, EventTypes.DecisionStage, true));
-  s.append({ ...mk(3, EventTypes.DecisionOutcome, true), payload: { action: 'buy', reason: 'ok' } });
+  s.append({
+    ...mk(3, EventTypes.DecisionOutcome, true),
+    payload: { action: 'buy', reason: 'ok' },
+  });
   return s;
 }
 
@@ -31,9 +40,12 @@ function checkD2(): CheckResult {
   const e2 = new ReplayEngine(src, new InMemoryEventStore());
   const s2 = e2.createSession({ snapshot_id: 'snap1', replay_reason: 'debug' });
   e2.runToEnd(s2);
-  const same = s1.stateHash === s2.stateHash &&
+  const same =
+    s1.stateHash === s2.stateHash &&
     JSON.stringify(e1.decisions(s1)) === JSON.stringify(e2.decisions(s2));
-  return same ? { id: 'INV-D2', status: 'pass' } : { id: 'INV-D2', status: 'fail', detail: 'non-reproducible replay' };
+  return same
+    ? { id: 'INV-D2', status: 'pass' }
+    : { id: 'INV-D2', status: 'fail', detail: 'non-reproducible replay' };
 }
 
 /** INV-E3: replay causes no external effects — ReplayEngine has no external sink path. */
@@ -46,20 +58,26 @@ function checkE3(): CheckResult {
   return external === 0 ? { id: 'INV-E3', status: 'pass' } : { id: 'INV-E3', status: 'fail' };
 }
 
-
 /** INV-R9: deterministic replay — recompute under a frozen clock equals the stored Decision. */
 function checkR9(): CheckResult {
   const frames = buildSampleRecording(2);
   const ok = frames.every((f) => verifyDeterminism(f));
-  return ok ? { id: 'INV-R9', status: 'pass' } : { id: 'INV-R9', status: 'fail', detail: 'replay != live' };
+  return ok
+    ? { id: 'INV-R9', status: 'pass' }
+    : { id: 'INV-R9', status: 'fail', detail: 'replay != live' };
 }
 
 /** INV-R10: replay/restore is side-effect-free — no trading event log, restore is idempotent. */
 function checkR10(): CheckResult {
   const s = new OperatorReplaySession(buildSampleRecording(2)).load();
-  const noEmit = (s as unknown as Record<string, unknown>)['eventLog'] === undefined && (s as unknown as Record<string, unknown>)['append'] === undefined;
-  const idempotent = s.restoreDecision() === s.restoreDecision() && s.restoreSnapshot() === s.restoreSnapshot();
-  return noEmit && idempotent ? { id: 'INV-R10', status: 'pass' } : { id: 'INV-R10', status: 'fail' };
+  const noEmit =
+    (s as unknown as Record<string, unknown>)['eventLog'] === undefined &&
+    (s as unknown as Record<string, unknown>)['append'] === undefined;
+  const idempotent =
+    s.restoreDecision() === s.restoreDecision() && s.restoreSnapshot() === s.restoreSnapshot();
+  return noEmit && idempotent
+    ? { id: 'INV-R10', status: 'pass' }
+    : { id: 'INV-R10', status: 'fail' };
 }
 
 /** INV-R11: transport orthogonality — speed/seek never change frame content at a given index. */

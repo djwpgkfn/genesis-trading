@@ -55,7 +55,9 @@ const report = await runAll();
 const failed = report.results.filter((r) => r.status === 'fail');
 const notImplemented = report.results.filter((r) => r.status === 'not-implemented');
 
-console.log(`[invariant-validate] registered ${registered} checks across ${groups.length} packages.`);
+console.log(
+  `[invariant-validate] registered ${registered} checks across ${groups.length} packages.`,
+);
 console.log(
   `[invariant-validate] ${report.implemented}/${report.total} invariants have checks; ` +
     `${failed.length} failing, ${notImplemented.length} not-implemented.`,

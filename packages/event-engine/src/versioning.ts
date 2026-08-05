@@ -1,7 +1,11 @@
 import type { StoredEvent } from './events.js';
 
 export type Upcaster = (payload: unknown) => unknown;
-interface Step { from: number; to: number; fn: Upcaster }
+interface Step {
+  from: number;
+  to: number;
+  fn: Upcaster;
+}
 
 /**
  * Event Versioning strategy: each event_type has a schema_version. Stored events are IMMUTABLE

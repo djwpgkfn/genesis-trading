@@ -1,6 +1,10 @@
 import { TF, type Candle, type Timeframe } from '../types.js';
 
-export interface SeqGap { after_seq: number; before_seq: number; missing: number }
+export interface SeqGap {
+  after_seq: number;
+  before_seq: number;
+  missing: number;
+}
 
 /** Detect missing sequence numbers in a per-stream ordered feed. */
 export function detectSeqGaps(seqs: readonly number[]): SeqGap[] {
@@ -14,7 +18,11 @@ export function detectSeqGaps(seqs: readonly number[]): SeqGap[] {
   return out;
 }
 
-export interface CandleGap { from_open_ms: number; to_open_ms: number; missing: number }
+export interface CandleGap {
+  from_open_ms: number;
+  to_open_ms: number;
+  missing: number;
+}
 
 /** Detect missing candle windows (non-contiguous open_time steps of tf). */
 export function detectCandleGaps(candles: readonly Candle[], tf: Timeframe): CandleGap[] {

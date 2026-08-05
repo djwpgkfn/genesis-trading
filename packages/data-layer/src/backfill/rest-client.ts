@@ -1,6 +1,11 @@
 import type { Candle, Symbol, Timeframe } from '../types.js';
 
-export interface CandleQuery { symbol: Symbol; tf: Timeframe; toMs: number; count: number }
+export interface CandleQuery {
+  symbol: Symbol;
+  tf: Timeframe;
+  toMs: number;
+  count: number;
+}
 export interface RestClient {
   /** Fetch up to `count` candles ending at `toMs` (exchange paginates via `to`). */
   getCandles(q: CandleQuery): Promise<Candle[]>;
@@ -58,5 +63,7 @@ export async function backfillCandles(
     if (earliest >= cursor) break; // no progress guard
     cursor = earliest;
   }
-  return out.filter((c) => c.open_time_ms >= fromMs).sort((a, b) => a.open_time_ms - b.open_time_ms);
+  return out
+    .filter((c) => c.open_time_ms >= fromMs)
+    .sort((a, b) => a.open_time_ms - b.open_time_ms);
 }

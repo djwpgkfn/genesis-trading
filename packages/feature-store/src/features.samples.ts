@@ -5,7 +5,11 @@ import type { FeatureDefinition } from './types.js';
 const v1 = '1.0.0' as Version;
 
 /** Latest CLOSED 1m candle from as-of trades (INV-T2 via reconstruction). */
-function latestClosed(ctx: { raw: readonly { payload: unknown }[]; symbol: string; asOfMs: number }) {
+function latestClosed(ctx: {
+  raw: readonly { payload: unknown }[];
+  symbol: string;
+  asOfMs: number;
+}) {
   const trades = ctx.raw.map((r) => r.payload as Trade).filter(Boolean);
   const candles = reconstructCandles(ctx.symbol, trades, '1m', ctx.asOfMs);
   return candles.length ? candles[candles.length - 1]! : null;

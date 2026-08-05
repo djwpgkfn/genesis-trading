@@ -3,7 +3,12 @@ import { reconstructCandles } from './reconstruct.js';
 import type { Trade } from '../types.js';
 
 const t = (ms: number, price: number, volume: number, seq: number): Trade => ({
-  symbol: 'KRW-BTC', event_time_ms: ms, price, volume, side: 'bid', seq,
+  symbol: 'KRW-BTC',
+  event_time_ms: ms,
+  price,
+  volume,
+  side: 'bid',
+  seq,
 });
 
 describe('reconstructCandles', () => {

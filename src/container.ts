@@ -19,7 +19,10 @@ export interface AppConfig {
 }
 
 /** Config Loader: reads env (via dotenv in main) and validates required secrets. */
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): { config: AppConfig; missing: string[] } {
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): {
+  config: AppConfig;
+  missing: string[];
+} {
   const upbit = loadUpbitConfig(env);
   const missing: string[] = [];
   if (!upbit.accessKey) missing.push('UPBIT_ACCESS_KEY');
@@ -58,7 +61,11 @@ export async function checkUpbitPublic(c: Container): Promise<void> {
 export async function probeUpbitPrivate(c: Container): Promise<boolean> {
   try {
     const accounts = await c.upbitRest.getAccounts();
-    c.logger.info('upbit private REST OK (JWT)', {}, { currencies: accounts.map((a) => a.currency) });
+    c.logger.info(
+      'upbit private REST OK (JWT)',
+      {},
+      { currencies: accounts.map((a) => a.currency) },
+    );
     return true;
   } catch (e) {
     c.logger.warn(

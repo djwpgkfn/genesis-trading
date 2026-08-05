@@ -1,6 +1,4 @@
-import type {
-  UUID, ISOTimestamp, SnapshotId, CorrelationId, EventType,
-} from '@genesis/contracts';
+import type { UUID, ISOTimestamp, SnapshotId, CorrelationId, EventType } from '@genesis/contracts';
 
 /** Event as submitted for sealing (no seq/prev_hash/hash — the store assigns those). */
 export interface EventInput<T = unknown> {

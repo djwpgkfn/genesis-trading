@@ -1,5 +1,11 @@
 import { systemNowMs } from '@genesis/contracts';
-export interface HistoStat { count: number; sum: number; min: number; max: number; avg: number }
+export interface HistoStat {
+  count: number;
+  sum: number;
+  min: number;
+  max: number;
+  avg: number;
+}
 
 /** Metric names Genesis tracks. */
 export const METRICS = {
@@ -17,7 +23,10 @@ export const METRICS = {
 /** In-memory metrics registry (observability only; never feeds decisions). */
 export class Metrics {
   private readonly counters = new Map<string, number>();
-  private readonly histos = new Map<string, { count: number; sum: number; min: number; max: number }>();
+  private readonly histos = new Map<
+    string,
+    { count: number; sum: number; min: number; max: number }
+  >();
   constructor(private readonly now: () => number = systemNowMs) {}
 
   counter(name: string, delta = 1): void {
@@ -25,13 +34,20 @@ export class Metrics {
   }
   observe(name: string, value: number): void {
     const h = this.histos.get(name) ?? { count: 0, sum: 0, min: Infinity, max: -Infinity };
-    h.count++; h.sum += value; h.min = Math.min(h.min, value); h.max = Math.max(h.max, value);
+    h.count++;
+    h.sum += value;
+    h.min = Math.min(h.min, value);
+    h.max = Math.max(h.max, value);
     this.histos.set(name, h);
   }
   /** Start a timer; returns a stop() that records the elapsed ms into `name`. */
   timer(name: string): () => number {
     const start = this.now();
-    return () => { const d = this.now() - start; this.observe(name, d); return d; };
+    return () => {
+      const d = this.now() - start;
+      this.observe(name, d);
+      return d;
+    };
   }
   snapshot(): { counters: Record<string, number>; histograms: Record<string, HistoStat> } {
     const histograms: Record<string, HistoStat> = {};

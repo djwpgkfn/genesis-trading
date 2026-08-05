@@ -42,10 +42,14 @@ export class ControlPanel {
 
   private emit(kind: ControlCommandKind, operator: string, extra: Record<string, unknown>): void {
     const input: EventInput = {
-      event_id: asUUID(`ctrl-${kind}-${++this.n}`), event_type: 'ControlCommand.issued',
-      event_time: asISOTimestamp(this.now()), ingest_time: asISOTimestamp(this.now()),
-      source_engine: 'presentation', schema_version: 1,
-      correlation_id: asCorrelationId('control'), snapshot_id: asSnapshotId('control'),
+      event_id: asUUID(`ctrl-${kind}-${++this.n}`),
+      event_type: 'ControlCommand.issued',
+      event_time: asISOTimestamp(this.now()),
+      ingest_time: asISOTimestamp(this.now()),
+      source_engine: 'presentation',
+      schema_version: 1,
+      correlation_id: asCorrelationId('control'),
+      snapshot_id: asSnapshotId('control'),
       payload: { kind, operator, ...extra },
     };
     this.log.append(input);

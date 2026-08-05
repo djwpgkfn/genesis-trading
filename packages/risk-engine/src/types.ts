@@ -15,11 +15,15 @@ export interface RiskDecision {
   reservation_id?: string;
 }
 
-export interface Position { symbol: string; qty: number; notional: number }
+export interface Position {
+  symbol: string;
+  qty: number;
+  notional: number;
+}
 
 export interface Limits {
   maxTotalExposure: number;
   maxSymbolExposure: number;
   maxDrawdownPct: number; // 0..1
-  trailingPct: number;    // 0..1
+  trailingPct: number; // 0..1
 }

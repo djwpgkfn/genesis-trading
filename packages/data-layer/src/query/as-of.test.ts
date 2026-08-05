@@ -5,8 +5,14 @@ import type { RawRecord } from '../types.js';
 
 const iso = (ms: number) => new Date(ms).toISOString() as RawRecord['event_time'];
 const rec = (evMs: number, inMs: number, seq: number): RawRecord => ({
-  kind: 'trade', symbol: 'KRW-BTC', event_time: iso(evMs), ingest_time: iso(inMs),
-  event_time_ms: evMs, ingest_time_ms: inMs, seq, payload: {},
+  kind: 'trade',
+  symbol: 'KRW-BTC',
+  event_time: iso(evMs),
+  ingest_time: iso(inMs),
+  event_time_ms: evMs,
+  ingest_time_ms: inMs,
+  seq,
+  payload: {},
 });
 
 describe('queryAsOf (INV-T1)', () => {

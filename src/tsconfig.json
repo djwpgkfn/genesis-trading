@@ -4,12 +4,7 @@
     "rootDir": ".",
     "outDir": "../dist"
   },
-  "include": [
-    "invariant-validate.ts",
-    "container.ts",
-    "main.ts",
-    "collector.ts"
-  ],
+  "include": ["invariant-validate.ts", "container.ts", "main.ts", "collector.ts"],
   "references": [
     {
       "path": "../contracts"

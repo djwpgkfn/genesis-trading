@@ -1,11 +1,24 @@
 import { InMemoryEventStore, type EventStore, type EventInput } from '@genesis/event-engine';
 import { asUUID, asISOTimestamp, asCorrelationId, asSnapshotId } from '@genesis/contracts';
 
-export interface Order { client_order_id: string; symbol: string; side: 'buy' | 'sell'; notional: number }
-export interface Fill { client_order_id: string; filled_notional: number; price: number }
-export interface ExchangeAdapter { placeOrder(o: Order): Fill } // single external path (injected)
+export interface Order {
+  client_order_id: string;
+  symbol: string;
+  side: 'buy' | 'sell';
+  notional: number;
+}
+export interface Fill {
+  client_order_id: string;
+  filled_notional: number;
+  price: number;
+}
+export interface ExchangeAdapter {
+  placeOrder(o: Order): Fill;
+} // single external path (injected)
 
-export interface TokenVerifier { authorizeExecution(token_id: string): boolean }
+export interface TokenVerifier {
+  authorizeExecution(token_id: string): boolean;
+}
 
 /**
  * The ONLY route by which an order reaches the exchange. Rejects any order without a valid Risk
@@ -29,9 +42,13 @@ export class ExecutionGateway {
   }
 
   execute(order: Order, token_id: string): { ok: boolean; reason: string; fill?: Fill } {
-    if (this.done.has(order.client_order_id)) return { ok: true, reason: 'already-executed (idempotent)' };
+    if (this.done.has(order.client_order_id))
+      return { ok: true, reason: 'already-executed (idempotent)' };
     if (!this.risk.authorizeExecution(token_id)) {
-      this.emit('Order.rejected', { client_order_id: order.client_order_id, reason: 'no valid token' });
+      this.emit('Order.rejected', {
+        client_order_id: order.client_order_id,
+        reason: 'no valid token',
+      });
       return { ok: false, reason: 'no valid Risk token (INV-R1)' }; // tokenless order rejected
     }
     this.emit('Order.sent', order);
@@ -43,10 +60,14 @@ export class ExecutionGateway {
 
   private emit(type: string, payload: unknown): void {
     const input: EventInput = {
-      event_id: asUUID(`exec-${type}-${++this.n}`), event_type: type,
-      event_time: asISOTimestamp(this.now()), ingest_time: asISOTimestamp(this.now()),
-      source_engine: 'execution-gateway', schema_version: 1,
-      correlation_id: asCorrelationId(this.correlationId), snapshot_id: asSnapshotId(this.snapshotId),
+      event_id: asUUID(`exec-${type}-${++this.n}`),
+      event_type: type,
+      event_time: asISOTimestamp(this.now()),
+      ingest_time: asISOTimestamp(this.now()),
+      source_engine: 'execution-gateway',
+      schema_version: 1,
+      correlation_id: asCorrelationId(this.correlationId),
+      snapshot_id: asSnapshotId(this.snapshotId),
       payload,
     };
     this.log.append(input);

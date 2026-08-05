@@ -32,7 +32,11 @@ export class ExperimentRunner {
     private readonly executor: ExperimentExecutor = defaultExecutor,
   ) {}
 
-  private runWindow(exp: Experiment, sourceLog: EventStore, period: Period): {
+  private runWindow(
+    exp: Experiment,
+    sourceLog: EventStore,
+    period: Period,
+  ): {
     metrics: Record<string, number>;
     decisions: DecisionRecord[];
     state_hash?: string;
@@ -44,9 +48,7 @@ export class ExperimentRunner {
       asOfEventMs: period.end,
     });
     engine.runToEnd(session);
-    const decisions = engine
-      .decisions(session)
-      .filter(() => true); // window already bounded by as-of; start-bound could be added similarly
+    const decisions = engine.decisions(session).filter(() => true); // window already bounded by as-of; start-bound could be added similarly
     const metrics = this.executor(decisions, this.exec);
     return { metrics, decisions, ...(session.stateHash ? { state_hash: session.stateHash } : {}) };
   }
@@ -59,17 +61,35 @@ export class ExperimentRunner {
   }
 
   /** Walk-Forward Validation: rolling folds; gate = ALL folds pass (out-of-sample consistency). */
-  runWFV(exp: Experiment, sourceLog: EventStore, hypothesis: Hypothesis, folds: number): ExperimentResult {
+  runWFV(
+    exp: Experiment,
+    sourceLog: EventStore,
+    hypothesis: Hypothesis,
+    folds: number,
+  ): ExperimentResult {
     const span = (exp.period.end - exp.period.start) / folds;
     const foldResults: FoldResult[] = [];
     let totalDecisions = 0;
     for (let i = 0; i < folds; i++) {
-      const period: Period = { start: exp.period.start + i * span, end: exp.period.start + (i + 1) * span };
+      const period: Period = {
+        start: exp.period.start + i * span,
+        end: exp.period.start + (i + 1) * span,
+      };
       const { metrics, decisions } = this.runWindow(exp, sourceLog, period);
-      foldResults.push({ start: period.start, end: period.end, passed: meetsCriteria(metrics, hypothesis.success_criteria), metrics });
+      foldResults.push({
+        start: period.start,
+        end: period.end,
+        passed: meetsCriteria(metrics, hypothesis.success_criteria),
+        metrics,
+      });
       totalDecisions += decisions.length;
     }
     const passed = foldResults.length > 0 && foldResults.every((f) => f.passed);
-    return { metrics: { folds: folds, passedFolds: foldResults.filter((f) => f.passed).length }, passed, decisions: totalDecisions, folds: foldResults };
+    return {
+      metrics: { folds: folds, passedFolds: foldResults.filter((f) => f.passed).length },
+      passed,
+      decisions: totalDecisions,
+      folds: foldResults,
+    };
   }
 }

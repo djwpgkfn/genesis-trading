@@ -12,7 +12,13 @@ export class TokenRegistry {
   private counter = 0;
 
   issue(request_id: string, reservation_id: string): ApprovalToken {
-    const t: ApprovalToken = { token_id: `tok-${++this.counter}`, request_id, reservation_id, used: false, valid: true };
+    const t: ApprovalToken = {
+      token_id: `tok-${++this.counter}`,
+      request_id,
+      reservation_id,
+      used: false,
+      valid: true,
+    };
     this.tokens.set(t.token_id, t);
     return t;
   }

@@ -11,13 +11,25 @@ const iso = (ms: number) => asISOTimestamp(new Date(ms).toISOString());
 function seed(): InMemoryEventStore {
   const s = new InMemoryEventStore();
   const mk = (n: number, type: string, payload: unknown): EventInput => ({
-    event_id: asUUID(`e${n}`), event_type: type, event_time: iso(n * 1000), ingest_time: iso(n * 1000),
-    source_engine: 't', schema_version: 1, correlation_id: asCorrelationId('cycle-1'), snapshot_id: asSnapshotId('s1'), payload,
+    event_id: asUUID(`e${n}`),
+    event_type: type,
+    event_time: iso(n * 1000),
+    ingest_time: iso(n * 1000),
+    source_engine: 't',
+    schema_version: 1,
+    correlation_id: asCorrelationId('cycle-1'),
+    snapshot_id: asSnapshotId('s1'),
+    payload,
   });
   s.append(mk(1, 'State.transitioned', { machine: 'production', from: 'READY', to: 'RUN' }));
   s.append(mk(2, 'MarketHealth.scored', { mode: 'normal', score: 0.5 }));
   s.append(mk(3, 'Strategy.evaluated', { count: 2 }));
-  s.append(mk(4, 'Portfolio.planned', { allocations: [{ symbol: 'KRW-BTC', notional: 100 }], utilization: 0.1 }));
+  s.append(
+    mk(4, 'Portfolio.planned', {
+      allocations: [{ symbol: 'KRW-BTC', notional: 100 }],
+      utilization: 0.1,
+    }),
+  );
   s.append(mk(5, 'Risk.decided', { symbol: 'KRW-BTC', approved: true }));
   s.append(mk(6, 'Order.sent', { client_order_id: 'o1' }));
   s.append(mk(7, EventTypes.DecisionOutcome, { action: 'buy', reason: 'ok' }));
@@ -46,7 +58,11 @@ describe('Explainability View', () => {
     const ex = explainabilityView(new LiveDataSource(seed()), 'cycle-1');
     expect(ex.timeline[0]!.event_type).toBe('MarketHealth.scored');
     expect(ex.timeline.map((t) => t.event_type)).toEqual([
-      'MarketHealth.scored', 'Strategy.evaluated', 'Portfolio.planned', 'Risk.decided', 'Order.sent',
+      'MarketHealth.scored',
+      'Strategy.evaluated',
+      'Portfolio.planned',
+      'Risk.decided',
+      'Order.sent',
     ]);
     expect(ex.decision).not.toBeNull();
   });
@@ -64,19 +80,34 @@ describe('Replay Mode == Live (same UI, source swapped)', () => {
     expect(replay).toEqual(live);
     const exLive = explainabilityView(new LiveDataSource(store), 'cycle-1');
     const exReplay = explainabilityView(new ReplayDataSource(session), 'cycle-1');
-    expect(exReplay.timeline.map((t) => t.event_type)).toEqual(exLive.timeline.map((t) => t.event_type));
+    expect(exReplay.timeline.map((t) => t.event_type)).toEqual(
+      exLive.timeline.map((t) => t.event_type),
+    );
   });
 });
 
 describe('Control Panel (only write surface)', () => {
   it('emergency exit routes through Risk FORCE_EXIT, not a direct order', () => {
     let forced = '';
-    const risk: RiskControlPort = { forceExit: (r) => { forced = r; }, run: () => {}, stop: () => {} };
+    const risk: RiskControlPort = {
+      forceExit: (r) => {
+        forced = r;
+      },
+      run: () => {},
+      stop: () => {},
+    };
     const cp = new ControlPanel(risk);
-    cp.run('op'); cp.stop('op'); cp.emergencyExit('op', 'panic');
+    cp.run('op');
+    cp.stop('op');
+    cp.emergencyExit('op', 'panic');
     expect(forced).toBe('panic');
     expect((cp as unknown as Record<string, unknown>).placeOrder).toBeUndefined();
-    expect(cp.eventLog().all().every((e) => e.event_type === 'ControlCommand.issued')).toBe(true);
+    expect(
+      cp
+        .eventLog()
+        .all()
+        .every((e) => e.event_type === 'ControlCommand.issued'),
+    ).toBe(true);
     expect(cp.eventLog().count()).toBe(3);
   });
 });

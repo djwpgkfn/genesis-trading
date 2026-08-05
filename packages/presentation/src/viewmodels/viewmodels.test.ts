@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
-  decisionViewModel, signalViewModel, strategyViewModel, explainabilityViewModel,
-  invariantViewModel, replayViewModel, decisionHistory,
+  decisionViewModel,
+  signalViewModel,
+  strategyViewModel,
+  explainabilityViewModel,
+  invariantViewModel,
+  replayViewModel,
+  decisionHistory,
 } from './index.js';
 import { OperatorReplaySession, buildSampleRecording } from '@genesis/replay-engine';
 import type { Decision } from '@genesis/decision-engine';
@@ -9,13 +14,42 @@ import type { Signal } from '@genesis/signal-engine';
 import type { StrategyDecision } from '@genesis/strategy-engine';
 
 const decision: Decision = {
-  id: 'decision-1', symbol: 'KRW-BTC', action: 'BUY', confidence: 0.72, reason: 'bullish',
-  strategy_used: 'momentum', signal_used: ['TREND_UP'], expected_risk: 0.4, expected_reward: 0.8, timestamp_ms: 1,
-  trace: { action: 'BUY', strategy: 'momentum', signals: ['TREND_UP'], features: ['ema9'], confidence: 0.72,
-    steps: [{ stage: 'decision', detail: 'BUY', refs: ['r'] }, { stage: 'confidence', detail: '72%', refs: [] }] },
+  id: 'decision-1',
+  symbol: 'KRW-BTC',
+  action: 'BUY',
+  confidence: 0.72,
+  reason: 'bullish',
+  strategy_used: 'momentum',
+  signal_used: ['TREND_UP'],
+  expected_risk: 0.4,
+  expected_reward: 0.8,
+  timestamp_ms: 1,
+  trace: {
+    action: 'BUY',
+    strategy: 'momentum',
+    signals: ['TREND_UP'],
+    features: ['ema9'],
+    confidence: 0.72,
+    steps: [
+      { stage: 'decision', detail: 'BUY', refs: ['r'] },
+      { stage: 'confidence', detail: '72%', refs: [] },
+    ],
+  },
 };
-const signal: Signal = { id: 'TREND_UP@1', name: 'TREND_UP', value: 1, strength: 0.8, confidence: 0.9, timestamp_ms: 1, source: ['slope'] };
-const strategy: StrategyDecision = { active: 'momentum', selected: ['momentum'], scores: [{ name: 'momentum', score: 1.5, confidence: 0.8, reason: ['TREND_UP'] }] };
+const signal: Signal = {
+  id: 'TREND_UP@1',
+  name: 'TREND_UP',
+  value: 1,
+  strength: 0.8,
+  confidence: 0.9,
+  timestamp_ms: 1,
+  source: ['slope'],
+};
+const strategy: StrategyDecision = {
+  active: 'momentum',
+  selected: ['momentum'],
+  scores: [{ name: 'momentum', score: 1.5, confidence: 0.8, reason: ['TREND_UP'] }],
+};
 
 describe('Presentation ViewModels (pure mapping)', () => {
   it('DecisionViewModel maps fields for display without business logic', () => {
@@ -39,7 +73,10 @@ describe('Presentation ViewModels (pure mapping)', () => {
     expect(vm.scores[0]!.score).toBe('1.50');
   });
   it('ExplainabilityViewModel maps the trace chain in order', () => {
-    expect(explainabilityViewModel(decision).chain.map((s) => s.stage)).toEqual(['decision', 'confidence']);
+    expect(explainabilityViewModel(decision).chain.map((s) => s.stage)).toEqual([
+      'decision',
+      'confidence',
+    ]);
   });
   it('InvariantViewModel reflects report status', () => {
     expect(invariantViewModel({ passed: 45, total: 45, failing: [] }).status).toBe('GREEN');

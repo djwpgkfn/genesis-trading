@@ -34,7 +34,10 @@ export function emitTransition(
 export function currentState(store: EventStore, machine: string): string | null {
   let state: string | null = null;
   for (const e of store.all()) {
-    if (e.event_type === EventTypes.StateTransitioned && (e.payload as Transition).machine === machine) {
+    if (
+      e.event_type === EventTypes.StateTransitioned &&
+      (e.payload as Transition).machine === machine
+    ) {
       state = (e.payload as Transition).to;
     }
   }

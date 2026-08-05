@@ -4,7 +4,14 @@ import type { StrategyName, StrategyScore, StrategyDecision } from './types.js';
 const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
 const WEIGHTS: Record<StrategyName, Partial<Record<SignalName, number>>> = {
-  'trend-following': { TREND_UP: 1, TREND_DOWN: 1, EMA_CROSS: 1, MACD_BULLISH: 0.8, MACD_BEARISH: 0.8, HIGH_VOLUME: 0.4 },
+  'trend-following': {
+    TREND_UP: 1,
+    TREND_DOWN: 1,
+    EMA_CROSS: 1,
+    MACD_BULLISH: 0.8,
+    MACD_BEARISH: 0.8,
+    HIGH_VOLUME: 0.4,
+  },
   'mean-reversion': { RSI_OVERSOLD: 1, RSI_OVERBOUGHT: 1, BB_BREAKOUT: 0.6, LOW_VOLUME: 0.3 },
   breakout: { BB_BREAKOUT: 1, HIGH_VOLUME: 0.8, VOLATILITY_HIGH: 0.6 },
   scalping: { HIGH_VOLUME: 1, LIQUIDITY_HIGH: 0.8, ORDERBOOK_IMBALANCE: 0.6 },

@@ -1,4 +1,8 @@
-import { emitTransition, currentState as deriveState, type EventStore } from '@genesis/event-engine';
+import {
+  emitTransition,
+  currentState as deriveState,
+  type EventStore,
+} from '@genesis/event-engine';
 import { asUUID, asISOTimestamp, asCorrelationId } from '@genesis/contracts';
 import type { RiskState } from './types.js';
 
@@ -22,7 +26,10 @@ export function canTransition(from: RiskState, to: RiskState): boolean {
 /** State is derived ONLY from events (INV-S2). Reuses event-engine State.transitioned. */
 export class RiskStateMachine {
   private counter = 0;
-  constructor(private readonly store: EventStore, private readonly now: () => string) {}
+  constructor(
+    private readonly store: EventStore,
+    private readonly now: () => string,
+  ) {}
 
   current(): RiskState {
     return (deriveState(this.store, MACHINE) as RiskState | null) ?? 'INIT';

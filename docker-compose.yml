@@ -5,11 +5,11 @@ services:
       POSTGRES_USER: genesis
       POSTGRES_PASSWORD: genesis
       POSTGRES_DB: genesis
-    ports: ["5432:5432"]
+    ports: ['5432:5432']
     volumes:
       - ./packages/adapters-db/migrations/002_postgres_timescale.sql:/docker-entrypoint-initdb.d/002.sql:ro
   clickhouse:
     image: clickhouse/clickhouse-server:latest
-    ports: ["8123:8123", "9000:9000"]
+    ports: ['8123:8123', '9000:9000']
     volumes:
       - ./packages/adapters-db/migrations/001_clickhouse_raw.sql:/docker-entrypoint-initdb.d/001.sql:ro

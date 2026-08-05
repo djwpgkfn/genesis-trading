@@ -15,7 +15,10 @@ describe('Deterministic replay (restore + verify)', () => {
 
   it('detects a tampered stored Decision', () => {
     const f = buildSampleRecording(1)[0]!;
-    const tampered = { ...f, decision: { ...f.decision, action: 'SELL' as const, confidence: 0.01 } };
+    const tampered = {
+      ...f,
+      decision: { ...f.decision, action: 'SELL' as const, confidence: 0.01 },
+    };
     expect(verifyDeterminism(tampered)).toBe(false);
   });
 });

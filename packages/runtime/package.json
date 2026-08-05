@@ -4,9 +4,17 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": { "build": "tsc -b" },
+  "scripts": {
+    "build": "tsc -b"
+  },
   "dependencies": {
-    "@genesis/contracts": "*", "@genesis/invariant-runner": "*", "@genesis/event-engine": "*",
-    "@genesis/replay-engine": "*", "@genesis/decision-engine": "*", "@genesis/presentation": "*"
+    "@genesis/contracts": "*",
+    "@genesis/invariant-runner": "*",
+    "@genesis/event-engine": "*",
+    "@genesis/replay-engine": "*",
+    "@genesis/decision-engine": "*",
+    "@genesis/presentation": "*",
+    "@genesis/signal-engine": "*",
+    "@genesis/data-layer": "*"
   }
 }

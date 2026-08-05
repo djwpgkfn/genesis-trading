@@ -38,7 +38,13 @@ export function computeFeatures(inp: ComputeInputs): Map<FeatureId, FeatureValue
       def.inputsRaw.length === 0 ? true : def.inputsRaw.includes(r.kind),
     );
     const { records, report } = normalizeInput(asOfRaw);
-    const value = def.transform({ symbol, asOfMs, raw: records, upstream: values, quality: report });
+    const value = def.transform({
+      symbol,
+      asOfMs,
+      raw: records,
+      upstream: values,
+      quality: report,
+    });
     values.set(ref.id, value);
     cache?.set(key, value);
   }

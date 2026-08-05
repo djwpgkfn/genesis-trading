@@ -17,8 +17,22 @@ describe('feature DAG', () => {
 
   it('detects cycles', () => {
     const reg = new FeatureDefinitionRegistry();
-    reg.register({ id: 'a', version: v1, dependencies: [{ id: 'b', version: v1 }], inputsRaw: [], transform: () => 0, provenance: { method_version: 'a' } });
-    reg.register({ id: 'b', version: v1, dependencies: [{ id: 'a', version: v1 }], inputsRaw: [], transform: () => 0, provenance: { method_version: 'b' } });
+    reg.register({
+      id: 'a',
+      version: v1,
+      dependencies: [{ id: 'b', version: v1 }],
+      inputsRaw: [],
+      transform: () => 0,
+      provenance: { method_version: 'a' },
+    });
+    reg.register({
+      id: 'b',
+      version: v1,
+      dependencies: [{ id: 'a', version: v1 }],
+      inputsRaw: [],
+      transform: () => 0,
+      provenance: { method_version: 'b' },
+    });
     expect(isDag(reg, [{ id: 'a', version: v1 }])).toBe(false);
   });
 });

@@ -3,7 +3,7 @@
 export type Brand<T, B extends string> = T & { readonly __brand: B };
 
 export type UUID = Brand<string, 'UUID'>;
-export type Hash = Brand<string, 'Hash'>;             // content hash (tamper-evident chain)
+export type Hash = Brand<string, 'Hash'>; // content hash (tamper-evident chain)
 export type ISOTimestamp = Brand<string, 'ISOTimestamp'>; // UTC ISO-8601
 export type Version = Brand<string, 'Version'>;
 export type SnapshotId = Brand<string, 'SnapshotId'>;

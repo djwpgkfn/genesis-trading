@@ -1,11 +1,35 @@
 export type SignalName =
-  | 'EMA_CROSS' | 'MACD_BULLISH' | 'MACD_BEARISH' | 'RSI_OVERSOLD' | 'RSI_OVERBOUGHT'
-  | 'BB_BREAKOUT' | 'HIGH_VOLUME' | 'LOW_VOLUME' | 'VOLATILITY_HIGH'
-  | 'TREND_UP' | 'TREND_DOWN' | 'ORDERBOOK_IMBALANCE' | 'LIQUIDITY_LOW' | 'LIQUIDITY_HIGH';
+  | 'EMA_CROSS'
+  | 'MACD_BULLISH'
+  | 'MACD_BEARISH'
+  | 'RSI_OVERSOLD'
+  | 'RSI_OVERBOUGHT'
+  | 'BB_BREAKOUT'
+  | 'HIGH_VOLUME'
+  | 'LOW_VOLUME'
+  | 'VOLATILITY_HIGH'
+  | 'TREND_UP'
+  | 'TREND_DOWN'
+  | 'ORDERBOOK_IMBALANCE'
+  | 'LIQUIDITY_LOW'
+  | 'LIQUIDITY_HIGH';
 
-export interface Candle { open: number; high: number; low: number; close: number; volume: number; time_ms: number }
-export interface OrderbookLevel { price: number; size: number }
-export interface Orderbook { bids: OrderbookLevel[]; asks: OrderbookLevel[] }
+export interface Candle {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  time_ms: number;
+}
+export interface OrderbookLevel {
+  price: number;
+  size: number;
+}
+export interface Orderbook {
+  bids: OrderbookLevel[];
+  asks: OrderbookLevel[];
+}
 
 /** Deterministic input to the Trading Core. Candles are closed (no repaint, INV-T2). */
 export interface MarketSnapshot {

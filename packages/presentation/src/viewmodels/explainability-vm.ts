@@ -1,6 +1,10 @@
 import type { Decision } from '@genesis/decision-engine';
 
-export interface ExplainabilityStepView { stage: string; detail: string; refs: string[] }
+export interface ExplainabilityStepView {
+  stage: string;
+  detail: string;
+  refs: string[];
+}
 export interface ExplainabilityViewModel {
   action: string;
   confidence_pct: string;

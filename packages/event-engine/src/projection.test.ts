@@ -7,10 +7,22 @@ import { asUUID, asISOTimestamp, asSnapshotId, asCorrelationId } from '@genesis/
 
 const iso = (ms: number) => asISOTimestamp(new Date(ms).toISOString());
 const ev = (type: string, n: number, payload: unknown): EventInput => ({
-  event_id: asUUID(`e${n}`), event_type: type, event_time: iso(n * 1000), ingest_time: iso(n * 1000),
-  source_engine: 't', schema_version: 1, correlation_id: asCorrelationId('c1'), snapshot_id: asSnapshotId('s1'), payload,
+  event_id: asUUID(`e${n}`),
+  event_type: type,
+  event_time: iso(n * 1000),
+  ingest_time: iso(n * 1000),
+  source_engine: 't',
+  schema_version: 1,
+  correlation_id: asCorrelationId('c1'),
+  snapshot_id: asSnapshotId('s1'),
+  payload,
 });
-const counter: Projection<number> = { name: 'c', version: '1', initial: () => 0, apply: (s) => s + 1 };
+const counter: Projection<number> = {
+  name: 'c',
+  version: '1',
+  initial: () => 0,
+  apply: (s) => s + 1,
+};
 
 describe('projection engine', () => {
   it('delete + rebuild == build (INV-E4)', () => {

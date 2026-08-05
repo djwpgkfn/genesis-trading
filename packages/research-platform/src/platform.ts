@@ -43,19 +43,36 @@ export class ResearchPlatform {
   }
 
   /** Run an experiment (backtest/paper/shadow or WFV) over a source event log; records events. */
-  runExperiment(exp: Experiment, sourceLog: EventStore, hypothesis: Hypothesis, wfvFolds?: number): Experiment {
-    this.emit(ResearchEventTypes.ExperimentStarted, exp.experiment_id, { experiment_id: exp.experiment_id, mode: exp.mode });
+  runExperiment(
+    exp: Experiment,
+    sourceLog: EventStore,
+    hypothesis: Hypothesis,
+    wfvFolds?: number,
+  ): Experiment {
+    this.emit(ResearchEventTypes.ExperimentStarted, exp.experiment_id, {
+      experiment_id: exp.experiment_id,
+      mode: exp.mode,
+    });
     try {
       const result =
         exp.mode === 'wfv'
           ? this.runner.runWFV(exp, sourceLog, hypothesis, wfvFolds ?? 4)
           : this.runner.run(exp, sourceLog, hypothesis);
       const done: Experiment = { ...exp, status: 'completed', result };
-      this.emit(ResearchEventTypes.ResultRecorded, exp.experiment_id, { experiment_id: exp.experiment_id, result });
-      this.emit(ResearchEventTypes.ExperimentCompleted, exp.experiment_id, { experiment_id: exp.experiment_id, passed: result.passed });
+      this.emit(ResearchEventTypes.ResultRecorded, exp.experiment_id, {
+        experiment_id: exp.experiment_id,
+        result,
+      });
+      this.emit(ResearchEventTypes.ExperimentCompleted, exp.experiment_id, {
+        experiment_id: exp.experiment_id,
+        passed: result.passed,
+      });
       return done;
     } catch (err) {
-      this.emit(ResearchEventTypes.ExperimentFailed, exp.experiment_id, { experiment_id: exp.experiment_id, error: String(err) });
+      this.emit(ResearchEventTypes.ExperimentFailed, exp.experiment_id, {
+        experiment_id: exp.experiment_id,
+        error: String(err),
+      });
       return { ...exp, status: 'failed' };
     }
   }

@@ -2,5 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": ["node"] },
   "include": ["src"],
-  "references": [{ "path": "../../contracts" }, { "path": "../event-engine" }, { "path": "../replay-engine" }]
+  "references": [
+    { "path": "../../contracts" },
+    { "path": "../event-engine" },
+    { "path": "../replay-engine" }
+  ]
 }

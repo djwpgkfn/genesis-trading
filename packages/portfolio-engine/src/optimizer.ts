@@ -34,8 +34,12 @@ export function optimize(
     const afterCap = Math.min(afterCorr, constraints.maxWeightPerSymbol); // per-position ruin cap
     weights.set(sym, afterCap);
     explain.push({
-      symbol: sym, kelly_raw: raw, after_correlation: afterCorr, after_constraints: afterCap,
-      final_weight: afterCap, notional: 0,
+      symbol: sym,
+      kelly_raw: raw,
+      after_correlation: afterCorr,
+      after_constraints: afterCap,
+      final_weight: afterCap,
+      notional: 0,
       reason: `fracKelly=${constraints.kellyFraction} avgCorr=${avgCorr.toFixed(3)} capped=${afterCap.toFixed(4)}`,
     });
   }
@@ -66,7 +70,11 @@ export function optimize(
   return { weights, explain };
 }
 
-function clusterByCorrelation(symbols: readonly string[], corr: CorrelationMatrix, threshold: number): string[][] {
+function clusterByCorrelation(
+  symbols: readonly string[],
+  corr: CorrelationMatrix,
+  threshold: number,
+): string[][] {
   const groups: string[][] = [];
   const assigned = new Set<string>();
   for (const s of symbols) {

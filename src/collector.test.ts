@@ -48,7 +48,10 @@ describe('WebSocketCollector', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     entries = [];
-    logger = new StructuredLogger((e) => entries.push(e), () => clock.iso());
+    logger = new StructuredLogger(
+      (e) => entries.push(e),
+      () => clock.iso(),
+    );
     fake = new FakeTransport();
   });
   afterEach(() => vi.useRealTimers());
@@ -64,7 +67,9 @@ describe('WebSocketCollector', () => {
     );
   }
   const reconnectDelays = () =>
-    entries.filter((e) => e.message === 'ws reconnect scheduled').map((e) => e.fields?.['delay_ms']);
+    entries
+      .filter((e) => e.message === 'ws reconnect scheduled')
+      .map((e) => e.fields?.['delay_ms']);
 
   it('connects and subscribes to ticker + trade for KRW-BTC', async () => {
     await make().start();
@@ -128,8 +133,12 @@ describe('WebSocketCollector', () => {
     expect(store.count()).toBe(2);
     expect(c.storedCount()).toBe(2);
     const recs = store.all();
-    expect(recs[0]).toMatchObject({ kind: 'ticker', symbol: 'KRW-BTC', event_time_ms: 111, seq: 0 });
+    expect(recs[0]).toMatchObject({
+      kind: 'ticker',
+      symbol: 'KRW-BTC',
+      event_time_ms: 111,
+      seq: 0,
+    });
     expect(recs[1]).toMatchObject({ kind: 'trade', symbol: 'KRW-BTC', event_time_ms: 222, seq: 1 });
   });
-
 });

@@ -29,21 +29,37 @@ export class FailureAutomation {
     private readonly now: () => string = () => new Date().toISOString(),
   ) {}
 
-  onFailure(trigger: AlertType, activeSnapshotId: string, message: string): { report: IncidentReport; session: ReplaySession } {
+  onFailure(
+    trigger: AlertType,
+    activeSnapshotId: string,
+    message: string,
+  ): { report: IncidentReport; session: ReplaySession } {
     const incident_id = `incident-${++this.n}`;
     this.alerts.raise(trigger, 'failure-automation', message);
 
     // Auto Replay Session around the incident (whole log; window can be narrowed by seq/as-of).
     const engine = new ReplayEngine(this.sourceLog, this.replayLog);
-    const session = engine.createSession({ snapshot_id: activeSnapshotId, replay_reason: 'bug-repro' });
+    const session = engine.createSession({
+      snapshot_id: activeSnapshotId,
+      replay_reason: 'bug-repro',
+    });
     engine.runToEnd(session);
 
     const decision_ids = engine.decisions(session).map((d) => String(d.decision_id));
     const report: IncidentReport = {
-      incident_id, at: this.now(), trigger, snapshot_id: activeSnapshotId,
-      replay_session_id: session.session_id, decision_ids, summary: message,
+      incident_id,
+      at: this.now(),
+      trigger,
+      snapshot_id: activeSnapshotId,
+      replay_session_id: session.session_id,
+      decision_ids,
+      summary: message,
     };
-    this.logger.error(`incident ${incident_id}: ${trigger}`, { replay_id: session.session_id, snapshot_id: activeSnapshotId }, { decision_ids });
+    this.logger.error(
+      `incident ${incident_id}: ${trigger}`,
+      { replay_id: session.session_id, snapshot_id: activeSnapshotId },
+      { decision_ids },
+    );
     return { report, session };
   }
 }

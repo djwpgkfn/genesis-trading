@@ -77,7 +77,11 @@ export class RiskEngine {
   }
 
   // ---- final-authority gate ----
-  preTradeCheck(req: TradeRequest, positions: readonly Position[], equity: { peak: number; current: number }): RiskDecision {
+  preTradeCheck(
+    req: TradeRequest,
+    positions: readonly Position[],
+    equity: { peak: number; current: number },
+  ): RiskDecision {
     if (this.decisions.has(req.request_id)) return this.decisions.get(req.request_id)!; // idempotent (INV-R7)
 
     const st = this.state();
@@ -101,8 +105,11 @@ export class RiskEngine {
 
     const token = this.tokens.issue(req.request_id, res.reservation_id);
     const d: RiskDecision = {
-      request_id: req.request_id, approved: true, reason: 'approved',
-      token_id: token.token_id, reservation_id: res.reservation_id,
+      request_id: req.request_id,
+      approved: true,
+      reason: 'approved',
+      token_id: token.token_id,
+      reservation_id: res.reservation_id,
     };
     this.decisions.set(req.request_id, d);
     this.emit('Risk.decided', d);

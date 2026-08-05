@@ -52,16 +52,17 @@ function checkE3(): CheckResult {
   // Replay path: no externalSink provided → cannot cause side effects.
   runPipeline(s.all(), countProjection, {});
   // (A Live path could pass externalSink; replay must not.)
-  return external === 0
-    ? { id: 'INV-E3', status: 'pass' }
-    : { id: 'INV-E3', status: 'fail' };
+  return external === 0 ? { id: 'INV-E3', status: 'pass' } : { id: 'INV-E3', status: 'fail' };
 }
 
 /** INV-E4: delete + rebuild projection == original; DecisionRecord back-traceable. */
 function checkE4(): CheckResult {
   const s = new InMemoryEventStore();
   s.append(mk(EventTypes.DecisionStage, 'c1', 1, true));
-  s.append({ ...mk(EventTypes.DecisionOutcome, 'c1', 2, true), payload: { action: 'buy', reason: 'ok' } });
+  s.append({
+    ...mk(EventTypes.DecisionOutcome, 'c1', 2, true),
+    payload: { action: 'buy', reason: 'ok' },
+  });
   const eng = new ProjectionEngine();
   const a = eng.build(s.all(), countProjection);
   const b = eng.rebuild(s.all(), countProjection);
@@ -84,9 +85,16 @@ function checkE5(): CheckResult {
 /** INV-S2: state transition only via emitted event; state derived from log. */
 function checkS2(): CheckResult {
   const s = new InMemoryEventStore();
-  emitTransition(s, { machine: 'risk', from: 'INIT', to: 'READY' }, {
-    event_id: asUUID('t1'), at: iso(1000), correlation_id: asCorrelationId('c1'), source_engine: 'risk',
-  });
+  emitTransition(
+    s,
+    { machine: 'risk', from: 'INIT', to: 'READY' },
+    {
+      event_id: asUUID('t1'),
+      at: iso(1000),
+      correlation_id: asCorrelationId('c1'),
+      source_engine: 'risk',
+    },
+  );
   const st = currentState(s, 'risk');
   const recorded = s.all().some((e) => e.event_type === EventTypes.StateTransitioned);
   return st === 'READY' && recorded

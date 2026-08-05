@@ -14,7 +14,12 @@ export interface AIRuntimeCapabilities {
 }
 
 export const AI_CAPABILITIES: AIRuntimeCapabilities = {
-  account: false, orderApi: false, risk: false, execution: false, exchange: false, dataPlaneLLM: false,
+  account: false,
+  orderApi: false,
+  risk: false,
+  execution: false,
+  exchange: false,
+  dataPlaneLLM: false,
 };
 
 /** The only thing the AI runtime can emit. */

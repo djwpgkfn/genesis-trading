@@ -36,7 +36,11 @@ export async function runAll(): Promise<RunReport> {
     try {
       results.push(await fn());
     } catch (e) {
-      results.push({ id: spec.id, status: 'fail', detail: e instanceof Error ? e.message : String(e) });
+      results.push({
+        id: spec.id,
+        status: 'fail',
+        detail: e instanceof Error ? e.message : String(e),
+      });
     }
   }
   const ok = results.every((r) => r.status !== 'fail');

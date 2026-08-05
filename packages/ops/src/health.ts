@@ -1,15 +1,38 @@
 import { systemNowMs } from '@genesis/contracts';
 export type HealthStatus = 'healthy' | 'warning' | 'critical';
 export type ComponentName =
-  | 'collector' | 'websocket' | 'rest' | 'database' | 'exchange'
-  | 'risk' | 'portfolio' | 'ai' | 'replay';
+  | 'collector'
+  | 'websocket'
+  | 'rest'
+  | 'database'
+  | 'exchange'
+  | 'risk'
+  | 'portfolio'
+  | 'ai'
+  | 'replay';
 
 export const COMPONENTS: readonly ComponentName[] = [
-  'collector', 'websocket', 'rest', 'database', 'exchange', 'risk', 'portfolio', 'ai', 'replay',
+  'collector',
+  'websocket',
+  'rest',
+  'database',
+  'exchange',
+  'risk',
+  'portfolio',
+  'ai',
+  'replay',
 ];
 
-export interface ComponentHealth { component: ComponentName; status: HealthStatus; detail: string; last_beat_ms: number }
-export interface HealthThresholds { warnAfterMs: number; critAfterMs: number }
+export interface ComponentHealth {
+  component: ComponentName;
+  status: HealthStatus;
+  detail: string;
+  last_beat_ms: number;
+}
+export interface HealthThresholds {
+  warnAfterMs: number;
+  critAfterMs: number;
+}
 
 /**
  * Observability side-channel — NEVER an input to any decision (Replay determinism preserved).
@@ -21,7 +44,8 @@ export class HealthMonitor {
     private readonly now: () => number = systemNowMs,
     private readonly th: HealthThresholds = { warnAfterMs: 10_000, critAfterMs: 30_000 },
   ) {
-    for (const c of COMPONENTS) this.map.set(c, { component: c, status: 'critical', detail: 'no beat', last_beat_ms: 0 });
+    for (const c of COMPONENTS)
+      this.map.set(c, { component: c, status: 'critical', detail: 'no beat', last_beat_ms: 0 });
   }
 
   heartbeat(component: ComponentName, detail = 'ok'): void {
