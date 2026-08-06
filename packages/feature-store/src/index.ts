@@ -7,3 +7,4 @@ export * from './quality.js';
 export * from './compute.js';
 export * from './features.samples.js';
 export * from './invariants.js';
+export * from './indicators.js';

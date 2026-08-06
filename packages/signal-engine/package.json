@@ -8,6 +8,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@genesis/invariant-runner": "*"
+    "@genesis/invariant-runner": "*",
+    "@genesis/feature-store": "*"
   }
 }
