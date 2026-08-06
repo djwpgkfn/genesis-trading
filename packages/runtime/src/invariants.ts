@@ -176,24 +176,6 @@ function checkE10(): CheckResult {
     : { id: 'INV-E10', status: 'fail', detail: 'DTO not immutable/plain' };
 }
 
-function isDeepFrozen(o: unknown): boolean {
-  if (o && typeof o === 'object') {
-    if (!Object.isFrozen(o)) return false;
-    return Object.values(o as Record<string, unknown>).every(isDeepFrozen);
-  }
-  return true;
-}
-
-/** INV-E10 (DTO Immutable / No Runtime Leak): presentation output is deeply frozen & JSON-serializable. */
-function checkE10(): CheckResult {
-  const view = presentSession(buildSampleRecording(2), sampleReport);
-  const frozen = isDeepFrozen(view);
-  const serializable = JSON.stringify(JSON.parse(JSON.stringify(view))) === JSON.stringify(view);
-  return frozen && serializable
-    ? { id: 'INV-E10', status: 'pass' }
-    : { id: 'INV-E10', status: 'fail', detail: `frozen=${frozen} serializable=${serializable}` };
-}
-
 export const presentationChecks: ReadonlyArray<{ id: string; fn: () => CheckResult }> = [
   { id: 'INV-E2', fn: checkExplainability },
   { id: 'INV-E4', fn: checkReadOnly },
@@ -202,6 +184,5 @@ export const presentationChecks: ReadonlyArray<{ id: string; fn: () => CheckResu
   { id: 'INV-E7', fn: checkE7 },
   { id: 'INV-E8', fn: checkE8 },
   { id: 'INV-E9', fn: checkE9 },
-  { id: 'INV-E10', fn: checkE10 },
   { id: 'INV-E10', fn: checkE10 },
 ];
