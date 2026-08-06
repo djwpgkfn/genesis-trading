@@ -57,4 +57,29 @@ describe('Runtime → Presentation (S12)', () => {
     const f = buildSampleRecording(1)[0]!;
     expect(frameView(f).market.symbol).toBeTruthy();
   });
+
+  it('P1: presentSession output is deeply frozen (DTO immutable)', () => {
+    const view = presentSession(buildSampleRecording(2), report);
+    expect(Object.isFrozen(view)).toBe(true);
+    expect(Object.isFrozen(view.frames)).toBe(true);
+    expect(Object.isFrozen(view.frames[0])).toBe(true);
+    expect(Object.isFrozen(view.frames[0]!.signals)).toBe(true);
+  });
+
+  it('P1: mutating a frozen DTO does not change it (immutable)', () => {
+    const view = presentSession(buildSampleRecording(1), report);
+    const before = view.frames[0]!.decision.action;
+    try {
+      (view.frames[0]!.decision as { action: string }).action = 'HACKED';
+    } catch {
+      /* strict mode throws; non-strict silently ignores — both leave value unchanged */
+    }
+    expect(view.frames[0]!.decision.action).toBe(before);
+  });
+
+  it('P1: DTO serialization round-trips (No Runtime Leak)', () => {
+    const view = presentSession(buildSampleRecording(3), report);
+    const roundTrip = JSON.parse(JSON.stringify(view));
+    expect(roundTrip).toEqual(view);
+  });
 });

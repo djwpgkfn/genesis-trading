@@ -1,4 +1,4 @@
-import type { FrameInput } from './input-dto.js';
+import { deepFreeze, type FrameInput } from './input-dto.js';
 import { decisionViewModel, type DecisionViewModel } from './viewmodels/decision-vm.js';
 import { signalViewModels, type SignalViewModel } from './viewmodels/signal-vm.js';
 import { strategyViewModel, type StrategyViewModel } from './viewmodels/strategy-vm.js';
@@ -52,7 +52,7 @@ export function frameView(frame: FrameInput): FrameView {
 
 /** Pure mapper: recorded frames → a fully serialized SessionView the UI can consume directly. */
 export function buildSessionView(frames: readonly FrameInput[]): SessionView {
-  return { frames: frames.map(frameView), history: decisionHistory(frames) };
+  return deepFreeze({ frames: frames.map(frameView), history: decisionHistory(frames) });
 }
 
 /** Full explainability panel (#5): Signal, Strategy, Decision, Risk Budget, Reject Reason,
@@ -127,5 +127,8 @@ export function presentSession(
   frames: readonly FrameInput[],
   report: InvariantReport,
 ): DashboardSessionView {
-  return { frames: frames.map((f) => dashboardView(f, report)), history: decisionHistory(frames) };
+  return deepFreeze({
+    frames: frames.map((f) => dashboardView(f, report)),
+    history: decisionHistory(frames),
+  });
 }

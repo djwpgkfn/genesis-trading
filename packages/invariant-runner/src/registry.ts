@@ -135,6 +135,11 @@ export const INVARIANTS: ReadonlyArray<InvariantSpec> = [
     statement: 'Presentation mapping is read-only: it never mutates the runtime snapshot.',
   },
   {
+    id: 'INV-E10',
+    category: 'E',
+    statement: 'Presentation DTO is immutable and plain (deep-freezable, no runtime leak).',
+  },
+  {
     id: 'INV-A1',
     category: 'A',
     statement: 'Dependency graph is a DAG; engines do not call each other directly.',
