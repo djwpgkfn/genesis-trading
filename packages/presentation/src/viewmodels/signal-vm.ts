@@ -1,4 +1,4 @@
-import type { Signal } from '@genesis/signal-engine';
+import type { SignalInput } from '../input-dto.js';
 
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
 
@@ -12,7 +12,7 @@ export interface SignalViewModel {
 }
 
 /** Pure mapper: Signal → display shape. Direction is read from value sign (no recomputation). */
-export function signalViewModel(s: Signal): SignalViewModel {
+export function signalViewModel(s: SignalInput): SignalViewModel {
   return {
     name: s.name,
     direction: s.value > 0 ? 'BUY' : s.value < 0 ? 'SELL' : 'HOLD',
@@ -22,5 +22,5 @@ export function signalViewModel(s: Signal): SignalViewModel {
     timestamp_ms: s.timestamp_ms,
   };
 }
-export const signalViewModels = (list: readonly Signal[]): SignalViewModel[] =>
+export const signalViewModels = (list: readonly SignalInput[]): SignalViewModel[] =>
   list.map(signalViewModel);

@@ -15,15 +15,6 @@
     },
     {
       "path": "../replay-engine"
-    },
-    {
-      "path": "../decision-engine"
-    },
-    {
-      "path": "../signal-engine"
-    },
-    {
-      "path": "../strategy-engine"
     }
   ]
 }

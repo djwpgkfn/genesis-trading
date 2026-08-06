@@ -1,4 +1,4 @@
-import type { Decision } from '@genesis/decision-engine';
+import type { DecisionInput } from '../input-dto.js';
 
 export interface ExplainabilityStepView {
   stage: string;
@@ -12,7 +12,7 @@ export interface ExplainabilityViewModel {
 }
 
 /** Pure mapper: Decision.trace → ordered explainability chain. No new judgment. */
-export function explainabilityViewModel(d: Decision): ExplainabilityViewModel {
+export function explainabilityViewModel(d: DecisionInput): ExplainabilityViewModel {
   return {
     action: d.trace.action,
     confidence_pct: `${Math.round(d.trace.confidence * 100)}%`,

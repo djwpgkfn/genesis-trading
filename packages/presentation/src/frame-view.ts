@@ -1,4 +1,4 @@
-import type { RecordedFrame } from '@genesis/replay-engine';
+import type { FrameInput } from './input-dto.js';
 import { decisionViewModel, type DecisionViewModel } from './viewmodels/decision-vm.js';
 import { signalViewModels, type SignalViewModel } from './viewmodels/signal-vm.js';
 import { strategyViewModel, type StrategyViewModel } from './viewmodels/strategy-vm.js';
@@ -33,7 +33,7 @@ export interface SessionView {
 }
 
 /** Pure mapper: a recorded frame → fully display-ready FrameView (no engine at consume time). */
-export function frameView(frame: RecordedFrame): FrameView {
+export function frameView(frame: FrameInput): FrameView {
   const last = frame.snapshot.candles[frame.snapshot.candles.length - 1];
   return {
     index: frame.index,
@@ -51,7 +51,7 @@ export function frameView(frame: RecordedFrame): FrameView {
 }
 
 /** Pure mapper: recorded frames → a fully serialized SessionView the UI can consume directly. */
-export function buildSessionView(frames: readonly RecordedFrame[]): SessionView {
+export function buildSessionView(frames: readonly FrameInput[]): SessionView {
   return { frames: frames.map(frameView), history: decisionHistory(frames) };
 }
 
@@ -72,7 +72,7 @@ export interface ExplainabilityDetail {
 
 /** Pure mapper: runtime frame (+ invariant report) → full explainability detail. */
 export function explainabilityDetail(
-  frame: RecordedFrame,
+  frame: FrameInput,
   report: InvariantReport,
 ): ExplainabilityDetail {
   const base = explainabilityViewModel(frame.decision);
@@ -104,7 +104,7 @@ export interface DashboardView {
 }
 
 /** Pure mapper: runtime frame (+ invariant report) → DashboardView. */
-export function dashboardView(frame: RecordedFrame, report: InvariantReport): DashboardView {
+export function dashboardView(frame: FrameInput, report: InvariantReport): DashboardView {
   const fv = frameView(frame);
   return {
     index: fv.index,
@@ -124,7 +124,7 @@ export interface DashboardSessionView {
   history: DecisionHistoryItem[];
 }
 export function presentSession(
-  frames: readonly RecordedFrame[],
+  frames: readonly FrameInput[],
   report: InvariantReport,
 ): DashboardSessionView {
   return { frames: frames.map((f) => dashboardView(f, report)), history: decisionHistory(frames) };

@@ -1,4 +1,4 @@
-import type { Decision } from '@genesis/decision-engine';
+import type { DecisionInput } from '../input-dto.js';
 
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
 const ACTION_COLOR: Record<string, string> = {
@@ -20,7 +20,7 @@ export interface DecisionViewModel {
 }
 
 /** Pure mapper: Decision (SSOT) → display shape. No business logic, no recomputation. */
-export function decisionViewModel(d: Decision): DecisionViewModel {
+export function decisionViewModel(d: DecisionInput): DecisionViewModel {
   const rr = d.expected_risk === 0 ? '—' : (d.expected_reward / d.expected_risk).toFixed(2);
   return {
     action: d.action,

@@ -10,9 +10,6 @@
   "dependencies": {
     "@genesis/contracts": "*",
     "@genesis/invariant-runner": "*",
-    "@genesis/replay-engine": "*",
-    "@genesis/decision-engine": "*",
-    "@genesis/signal-engine": "*",
-    "@genesis/strategy-engine": "*"
+    "@genesis/replay-engine": "*"
   }
 }

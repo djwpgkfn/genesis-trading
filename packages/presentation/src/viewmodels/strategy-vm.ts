@@ -1,4 +1,4 @@
-import type { StrategyDecision } from '@genesis/strategy-engine';
+import type { StrategyInput } from '../input-dto.js';
 
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
 
@@ -15,7 +15,7 @@ export interface StrategyViewModel {
 }
 
 /** Pure mapper: StrategyDecision → display shape. No re-scoring. */
-export function strategyViewModel(s: StrategyDecision): StrategyViewModel {
+export function strategyViewModel(s: StrategyInput): StrategyViewModel {
   return {
     active: s.active,
     selected: [...s.selected],
