@@ -7,6 +7,11 @@ import {
   type ExplainabilityViewModel,
 } from './viewmodels/explainability-vm.js';
 import { decisionHistory, type DecisionHistoryItem } from './viewmodels/replay-vm.js';
+import {
+  invariantViewModel,
+  type InvariantViewModel,
+  type InvariantReport,
+} from './viewmodels/invariant-vm.js';
 
 export interface MarketView {
   symbol: string;
@@ -48,4 +53,79 @@ export function frameView(frame: RecordedFrame): FrameView {
 /** Pure mapper: recorded frames → a fully serialized SessionView the UI can consume directly. */
 export function buildSessionView(frames: readonly RecordedFrame[]): SessionView {
   return { frames: frames.map(frameView), history: decisionHistory(frames) };
+}
+
+/** Full explainability panel (#5): Signal, Strategy, Decision, Risk Budget, Reject Reason,
+ *  Invariant Status, Timestamp — all derived from the runtime snapshot + invariant report. */
+export interface ExplainabilityDetail {
+  timestamp: string;
+  action: string;
+  confidence_pct: string;
+  signals: string[];
+  strategy: string;
+  decision: string;
+  risk_budget: number;
+  reject_reason: string | null;
+  invariant_status: string;
+  chain: { stage: string; detail: string; refs: string[] }[];
+}
+
+/** Pure mapper: runtime frame (+ invariant report) → full explainability detail. */
+export function explainabilityDetail(
+  frame: RecordedFrame,
+  report: InvariantReport,
+): ExplainabilityDetail {
+  const base = explainabilityViewModel(frame.decision);
+  const inv = invariantViewModel(report);
+  const rejected = frame.decision.action === 'HOLD' || frame.decision.action === 'WAIT';
+  return {
+    timestamp: new Date(frame.timestamp_ms).toISOString(),
+    action: frame.decision.action,
+    confidence_pct: base.confidence_pct,
+    signals: frame.signals.map((s) => s.name),
+    strategy: frame.strategy.active,
+    decision: frame.decision.action,
+    risk_budget: frame.risk.budget_available,
+    reject_reason: rejected ? frame.decision.reason : null,
+    invariant_status: `${inv.label} ${inv.status}`,
+    chain: base.chain,
+  };
+}
+
+/** Top-level dashboard view for a single frame: all panels, display-ready. */
+export interface DashboardView {
+  index: number;
+  market: MarketView;
+  signals: SignalViewModel[];
+  strategy: StrategyViewModel;
+  decision: DecisionViewModel;
+  explainability: ExplainabilityDetail;
+  invariant: InvariantViewModel;
+}
+
+/** Pure mapper: runtime frame (+ invariant report) → DashboardView. */
+export function dashboardView(frame: RecordedFrame, report: InvariantReport): DashboardView {
+  const fv = frameView(frame);
+  return {
+    index: fv.index,
+    market: fv.market,
+    signals: fv.signals,
+    strategy: fv.strategy,
+    decision: fv.decision,
+    explainability: explainabilityDetail(frame, report),
+    invariant: invariantViewModel(report),
+  };
+}
+
+/** Runtime → Presentation bridge (#2): recorded frames + invariant report → serializable DTO.
+ *  Live and Replay call this SAME function with the SAME ViewModels (#6). */
+export interface DashboardSessionView {
+  frames: DashboardView[];
+  history: DecisionHistoryItem[];
+}
+export function presentSession(
+  frames: readonly RecordedFrame[],
+  report: InvariantReport,
+): DashboardSessionView {
+  return { frames: frames.map((f) => dashboardView(f, report)), history: decisionHistory(frames) };
 }

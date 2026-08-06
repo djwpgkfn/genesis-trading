@@ -74,7 +74,12 @@ function checkControlSurface(): CheckResult {
     : { id: 'INV-E5', status: 'fail' };
 }
 
-import { decisionViewModel, replayViewModel } from '@genesis/presentation';
+import {
+  decisionViewModel,
+  replayViewModel,
+  presentSession,
+  buildSessionView,
+} from '@genesis/presentation';
 import { buildSampleRecording } from '@genesis/replay-engine';
 import { OperatorReplaySession } from '@genesis/replay-engine';
 import type { Decision } from '@genesis/decision-engine';
@@ -125,10 +130,36 @@ function checkE7(): CheckResult {
     : { id: 'INV-E7', status: 'fail', detail: 'presentation added business logic' };
 }
 
+const sampleReport = { passed: 47, total: 47, failing: [] as string[] };
+
+/** INV-E8 (Browser Boundary / Snapshot-Only): presentation output is plain JSON-serializable data. */
+function checkE8(): CheckResult {
+  const frames = buildSampleRecording(3);
+  const view = presentSession(frames, sampleReport);
+  const roundTrip = JSON.parse(JSON.stringify(view));
+  const ok = JSON.stringify(roundTrip) === JSON.stringify(view) && view.frames.length === 3;
+  return ok
+    ? { id: 'INV-E8', status: 'pass' }
+    : { id: 'INV-E8', status: 'fail', detail: 'presentation DTO not plain-serializable' };
+}
+
+/** INV-E9 (Read-Only): presentation mapping never mutates the runtime snapshot it reads. */
+function checkE9(): CheckResult {
+  const frames = buildSampleRecording(2);
+  const before = JSON.stringify(frames);
+  buildSessionView(frames);
+  presentSession(frames, sampleReport);
+  return JSON.stringify(frames) === before
+    ? { id: 'INV-E9', status: 'pass' }
+    : { id: 'INV-E9', status: 'fail', detail: 'presentation mutated its input' };
+}
+
 export const presentationChecks: ReadonlyArray<{ id: string; fn: () => CheckResult }> = [
   { id: 'INV-E2', fn: checkExplainability },
   { id: 'INV-E4', fn: checkReadOnly },
   { id: 'INV-E5', fn: checkControlSurface },
   { id: 'INV-E6', fn: checkE6 },
   { id: 'INV-E7', fn: checkE7 },
+  { id: 'INV-E8', fn: checkE8 },
+  { id: 'INV-E9', fn: checkE9 },
 ];

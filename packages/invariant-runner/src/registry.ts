@@ -124,6 +124,17 @@ export const INVARIANTS: ReadonlyArray<InvariantSpec> = [
       'Presentation has no business logic: ViewModels only re-shape final Decision fields (PR2).',
   },
   {
+    id: 'INV-E8',
+    category: 'E',
+    statement:
+      'Presentation output is plain JSON-serializable DTO (browser boundary, snapshot-only).',
+  },
+  {
+    id: 'INV-E9',
+    category: 'E',
+    statement: 'Presentation mapping is read-only: it never mutates the runtime snapshot.',
+  },
+  {
     id: 'INV-A1',
     category: 'A',
     statement: 'Dependency graph is a DAG; engines do not call each other directly.',
