@@ -132,3 +132,56 @@ export function presentSession(
     history: decisionHistory(frames),
   });
 }
+
+// ── P2: additional views (pure re-shaping of data already on the frame; no indicator math) ──
+
+/** Feature view: engine-computed signals (features carried on the frame) + market context. */
+export interface FeatureView {
+  symbol: string;
+  last_close: number | null;
+  candle_count: number;
+  features: { name: string; value: number }[];
+}
+export function featureView(frame: FrameInput): FeatureView {
+  const candles = frame.snapshot.candles;
+  const last = candles[candles.length - 1];
+  return {
+    symbol: frame.snapshot.symbol,
+    last_close: last ? last.close : null,
+    candle_count: candles.length,
+    features: frame.signals.map((s) => ({ name: s.name, value: s.value })),
+  };
+}
+
+/** Risk view: risk budget/halt state from the frame's risk snapshot. */
+export interface RiskView {
+  budget_available: number;
+  halted: boolean;
+  status: 'ACTIVE' | 'HALTED';
+}
+export function riskView(frame: FrameInput): RiskView {
+  const halted = frame.risk.halted ?? false;
+  return {
+    budget_available: frame.risk.budget_available,
+    halted,
+    status: halted ? 'HALTED' : 'ACTIVE',
+  };
+}
+
+/** Market health view: shallow data-availability signal (display rule, not a computed indicator). */
+export interface MarketHealthView {
+  symbol: string;
+  candle_count: number;
+  last_close: number | null;
+  data_quality: 'OK' | 'THIN';
+}
+export function marketHealthView(frame: FrameInput): MarketHealthView {
+  const candles = frame.snapshot.candles;
+  const last = candles[candles.length - 1];
+  return {
+    symbol: frame.snapshot.symbol,
+    candle_count: candles.length,
+    last_close: last ? last.close : null,
+    data_quality: candles.length >= 20 ? 'OK' : 'THIN',
+  };
+}
