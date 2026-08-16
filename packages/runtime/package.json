@@ -15,6 +15,7 @@
     "@genesis/decision-engine": "*",
     "@genesis/presentation": "*",
     "@genesis/signal-engine": "*",
-    "@genesis/data-layer": "*"
+    "@genesis/data-layer": "*",
+    "@genesis/risk-engine": "*"
   }
 }

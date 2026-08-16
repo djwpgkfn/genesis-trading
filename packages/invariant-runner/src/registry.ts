@@ -140,6 +140,12 @@ export const INVARIANTS: ReadonlyArray<InvariantSpec> = [
     statement: 'Presentation DTO is immutable and plain (deep-freezable, no runtime leak).',
   },
   {
+    id: 'INV-E11',
+    category: 'E',
+    statement:
+      'Full Snapshot equals initial snapshot with incremental append-frame patches applied (Snapshot+Patch consistency, Replay==Live).',
+  },
+  {
     id: 'INV-A1',
     category: 'A',
     statement: 'Dependency graph is a DAG; engines do not call each other directly.',

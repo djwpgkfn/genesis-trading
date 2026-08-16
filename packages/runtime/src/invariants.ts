@@ -79,6 +79,10 @@ import {
   replayViewModel,
   presentSession,
   buildSessionView,
+  dashboardView as presentDashboardView,
+  decisionHistory,
+  applyPatches,
+  type PresentationPatch,
 } from '@genesis/presentation';
 import { buildSampleRecording } from '@genesis/replay-engine';
 import { OperatorReplaySession } from '@genesis/replay-engine';
@@ -176,6 +180,24 @@ function checkE10(): CheckResult {
     : { id: 'INV-E10', status: 'fail', detail: 'DTO not immutable/plain' };
 }
 
+/** INV-E11 (Snapshot + Patch Consistency / Replay == Live): a Full Snapshot equals the initial
+ *  snapshot with the incremental append-frame patches folded on top. */
+function checkE11(): CheckResult {
+  const frames = buildSampleRecording(4);
+  const report = { passed: 48, total: 48, failing: [] as string[] };
+  const full = presentSession(frames, report);
+  const base = presentSession(frames.slice(0, 1), report);
+  const patches: PresentationPatch[] = frames.slice(1).map((f) => ({
+    op: 'append-frame' as const,
+    frame: presentDashboardView(f, report),
+    history: decisionHistory([f])[0]!,
+  }));
+  const folded = applyPatches(base, patches);
+  return JSON.stringify(folded) === JSON.stringify(full)
+    ? { id: 'INV-E11', status: 'pass' }
+    : { id: 'INV-E11', status: 'fail', detail: 'snapshot + patches != full snapshot' };
+}
+
 export const presentationChecks: ReadonlyArray<{ id: string; fn: () => CheckResult }> = [
   { id: 'INV-E2', fn: checkExplainability },
   { id: 'INV-E4', fn: checkReadOnly },
@@ -185,4 +207,5 @@ export const presentationChecks: ReadonlyArray<{ id: string; fn: () => CheckResu
   { id: 'INV-E8', fn: checkE8 },
   { id: 'INV-E9', fn: checkE9 },
   { id: 'INV-E10', fn: checkE10 },
+  { id: 'INV-E11', fn: checkE11 },
 ];

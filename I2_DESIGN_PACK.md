@@ -24,7 +24,9 @@ Presentation Layer는 단순 Dashboard가 아니라 **Production Runtime의 실�
 ## 1. Scope / Objectives / Deliverables / Out of Scope
 
 ### Scope (재정의)
+
 **Runtime Event Stream → Realtime Trading Presentation Pipeline** 구축.
+
 ```
 Market Data Stream → Data Layer → Feature Store → Signal → Strategy → Risk → Portfolio → Decision
      → Runtime Event Loop ─┬─ Recording Sink
@@ -32,6 +34,7 @@ Market Data Stream → Data Layer → Feature Store → Signal → Strategy → 
 ```
 
 ### Objectives
+
 1. LiveRuntime 기존 주입점에 **risk/portfolio 어댑터** 결선(엔진 소스 무변경, as-of).
 2. **Recording Sink**(경계 버퍼)로 tick마다 `RecordedFrame` 축적.
 3. **Runtime Event Stream Bridge**: Full Snapshot + Incremental Event(patch) 생산.
@@ -41,12 +44,14 @@ Market Data Stream → Data Layer → Feature Store → Signal → Strategy → 
 7. Replay·Live가 **동일 Runtime·DTO·Pipeline** 사용.
 
 ### Deliverables (구현 시 산출, 본 Pack은 설계만)
+
 - `packages/runtime`: risk/portfolio providers, recording sink, **event-stream bridge(snapshot/patch)**, runtime→browser push — 전부 신규 파일/메서드(기존 API 유지).
 - `packages/presentation`: MarketView/AccountView/AIDecisionView DTO + 순수 매퍼, **patch codec**(신규, view-codec와 별개).
 - 신규 문서: `RFC-I2-runtime-integration`, `ADR-I2A-risk-portfolio-providers`, `ADR-I2B-live-recording-sink`, `ADR-I2C-snapshot-incremental-ui`.
 - 신규 테스트: provider point-in-time, recording 결정론, snapshot+patch 일관성, Live==Replay DTO, browser push 격리, view 매퍼.
 
 ### Out of Scope
+
 - **실매수/실매도 주문, API Key 주문 실행** — Execution Gateway 이후.
 - Upbit 사설 주문, KIS adapter, AI advisory 실행 결선, Production Runtime 실행 통합, 자금 이동.
 - Contract/ADR/Constitution/기존 Invariant **수정**. Domain 엔진 소스 변경.
@@ -66,6 +71,7 @@ Market Data Stream (Upbit WS: ticker/trade/orderbook)   ── 기존 collector 
                          └─ Presentation Stream(presentSession → DTO + patch)
    ▼ Browser Trading UI  ── BrowserAdapter(snapshot + incremental), DTO 전용, Read-Only
 ```
+
 - Risk/Portfolio 어댑터는 **runtime 계층**에서 엔진을 감싸 스냅샷 계약으로 변환(엔진·계약 무변경, asOf만).
 - `RecordedFrame`은 이미 risk/portfolio/signals/strategy/decision 보유 → **sink는 축적만**, 신규 계약 불필요.
 - Live·Replay 모두 **동일 `presentSession`** 호출.
@@ -90,14 +96,17 @@ Market Data Stream (Upbit WS: ticker/trade/orderbook)   ── 기존 collector 
 모든 View는 **순수 매퍼**(Runtime 파생 데이터 → DTO), **엔진/Domain 미참조**, deeply-frozen·serializable.
 
 ### Market View
+
 실시간 현재가 · 체결 스트림 · 호가창 · 거래량 · 캔들 업데이트.
 → RawStore(ticker/trade/orderbook)에서 runtime이 파생한 `MarketView` DTO. (기존 `FeatureView`/`MarketHealthView`는 무변경, 확장 계열로 흡수.)
 
 ### Account View
+
 보유 자산 · 평가 금액 · 손익 · **Risk Budget 상태** · **Portfolio 상태**.
 → runtime의 RiskSnapshot/PortfolioSnapshot + positions에서 파생한 `AccountView` DTO. **I2는 paper/시뮬레이션 상태**(실지갑·사설 인증은 범위 밖).
 
 ### AI Decision View
+
 현재 Signal · Strategy 상태 · Decision 결과 · Explainability · **Risk 제한(reject) 이유**.
 → 기존 `ExplainabilityDetail`/`DashboardView` DTO 재사용/확장.
 
@@ -111,11 +120,11 @@ Market Data Stream (Upbit WS: ticker/trade/orderbook)   ── 기존 collector 
 
 - **기존 48 invariant: 변경 없음.**
 - **신규 additive 후보(승인 시, 전부 E 카테고리 · Stub 금지):**
-  - `INV-E11` *Provider Point-in-Time* — risk/portfolio provider는 asOf만 사용.
-  - `INV-E12` *Live == Replay DTO* — 동일 frames ⇒ 동일 DashboardSessionView.
-  - `INV-E13` *Recording Determinism* — 동일 입력·클럭 ⇒ 동일 RecordedFrame 시퀀스.
-  - `INV-E14` *Snapshot+Patch Consistency* — Full Snapshot == 이전 Snapshot + patch 누적 적용.
-  - `INV-E15` *Realtime Pipeline Isolation* — 실시간 View DTO는 순수·serializable·Domain 미참조.
+  - `INV-E11` _Provider Point-in-Time_ — risk/portfolio provider는 asOf만 사용.
+  - `INV-E12` _Live == Replay DTO_ — 동일 frames ⇒ 동일 DashboardSessionView.
+  - `INV-E13` _Recording Determinism_ — 동일 입력·클럭 ⇒ 동일 RecordedFrame 시퀀스.
+  - `INV-E14` _Snapshot+Patch Consistency_ — Full Snapshot == 이전 Snapshot + patch 누적 적용.
+  - `INV-E15` _Realtime Pipeline Isolation_ — 실시간 View DTO는 순수·serializable·Domain 미참조.
 
 ## 6. ADR / RFC 영향 분석
 
@@ -130,16 +139,16 @@ Market Data Stream (Upbit WS: ticker/trade/orderbook)   ── 기존 collector 
 
 ## 7. 작업 순서 (WBS, v2)
 
-| ID | 작업 | 산출물 | Green Gate |
-|---|---|---|---|
-| **I2-0** | Design Update(본 v2: Realtime UI Invariant·Event Stream 설계·ADR/RFC 영향) | 본 문서 + 신규 ADR/RFC 초안 | 문서 검토 |
-| I2-1 | Risk/Portfolio Provider Adapter | `runtime/providers.ts` + 테스트, ADR-I2A | ci PASS |
-| I2-2 | Recording Sink(경계 버퍼) | `frames()`/ring + 테스트, ADR-I2B | ci PASS |
-| I2-3 | Runtime Event Stream Bridge(snapshot + patch) | bridge + patch codec + 일관성 테스트, ADR-I2C | ci PASS |
-| I2-4 | Browser Realtime Transport | 기존 BrowserAdapter 결선(snapshot/patch) + 격리 테스트 | ci PASS |
-| I2-5 | Dashboard DTO Fixture 제거 | dashboard가 Runtime DTO 소비 + render 테스트 | ci + dashboard build |
-| I2-6 | Realtime Trading UI Base Layer | Market/Account/AIDecision View DTO + 매퍼 + 테스트 | ci PASS |
-| (I2-inv) | 승인 시 additive invariant E11–E15 | registry+checks+테스트 | ci PASS(48→최대 53) |
+| ID       | 작업                                                                       | 산출물                                                 | Green Gate           |
+| -------- | -------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------- |
+| **I2-0** | Design Update(본 v2: Realtime UI Invariant·Event Stream 설계·ADR/RFC 영향) | 본 문서 + 신규 ADR/RFC 초안                            | 문서 검토            |
+| I2-1     | Risk/Portfolio Provider Adapter                                            | `runtime/providers.ts` + 테스트, ADR-I2A               | ci PASS              |
+| I2-2     | Recording Sink(경계 버퍼)                                                  | `frames()`/ring + 테스트, ADR-I2B                      | ci PASS              |
+| I2-3     | Runtime Event Stream Bridge(snapshot + patch)                              | bridge + patch codec + 일관성 테스트, ADR-I2C          | ci PASS              |
+| I2-4     | Browser Realtime Transport                                                 | 기존 BrowserAdapter 결선(snapshot/patch) + 격리 테스트 | ci PASS              |
+| I2-5     | Dashboard DTO Fixture 제거                                                 | dashboard가 Runtime DTO 소비 + render 테스트           | ci + dashboard build |
+| I2-6     | Realtime Trading UI Base Layer                                             | Market/Account/AIDecision View DTO + 매퍼 + 테스트     | ci PASS              |
+| (I2-inv) | 승인 시 additive invariant E11–E15                                         | registry+checks+테스트                                 | ci PASS(48→최대 53)  |
 
 각 단계: 구현 → 사용자 `npm run build/lint/invariant/test`(및 필요 시 dashboard build) PASS → 다음. 설계 중간 변경 없음.
 

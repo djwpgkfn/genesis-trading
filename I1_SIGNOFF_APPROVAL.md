@@ -10,14 +10,14 @@
 
 ## 2. CI Gate 검증 결과 (최종)
 
-| Gate | 결과 |
-|---|---|
-| Build (`tsc -b`) | ✅ PASS |
-| Lint (ESLint) | ✅ PASS |
-| Format Check (Prettier) | ✅ PASS |
-| Contract Validate | ✅ PASS |
-| Invariant Validate | ✅ PASS — **48/48** invariants checked, 0 failing, 0 not-implemented (**64 checks / 13 packages**) |
-| Test (Vitest) | ✅ PASS — **170 tests / 38 files** |
+| Gate                    | 결과                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| Build (`tsc -b`)        | ✅ PASS                                                                                            |
+| Lint (ESLint)           | ✅ PASS                                                                                            |
+| Format Check (Prettier) | ✅ PASS                                                                                            |
+| Contract Validate       | ✅ PASS                                                                                            |
+| Invariant Validate      | ✅ PASS — **48/48** invariants checked, 0 failing, 0 not-implemented (**64 checks / 13 packages**) |
+| Test (Vitest)           | ✅ PASS — **170 tests / 38 files**                                                                 |
 
 ## 3. 완료 확인 항목
 
@@ -47,5 +47,5 @@ Risk/Portfolio 실연결 → Paper Execution → Upbit 사설 인증 → KIS Ada
 - 검증 기준: commit `49749f5`, CI Gate 전 항목 PASS
 - 판정: **APPROVED — I1-ops 기준선 봉인 및 S12A 완료 승인**
 - 후속 작업은 신규 브랜치에서 진행하며 본 기준선을 파괴적으로 변경하지 않는다.
-EOF
-echo done
+  EOF
+  echo done

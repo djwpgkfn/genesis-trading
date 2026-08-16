@@ -6,7 +6,9 @@ import type {
   PortfolioSnapshot,
 } from '@genesis/decision-engine';
 import { systemNowMs } from '@genesis/contracts';
+import type { RecordedFrame } from '@genesis/replay-engine';
 import { buildMarketSnapshot } from './snapshot.js';
+import { RingBuffer } from './ring-buffer.js';
 
 export type RiskProvider = (asOfMs: number) => RiskSnapshot;
 export type PortfolioProvider = (asOfMs: number) => PortfolioSnapshot;
@@ -18,6 +20,7 @@ export interface LiveRuntimeOptions {
   now?: () => number; // injected clock — replay overrides with a frozen clock
   risk?: RiskProvider; // real risk-engine wiring: P0-3
   portfolio?: PortfolioProvider; // real portfolio-engine wiring: P0-3
+  recordingCapacity?: number; // I2-2: bounded recording sink (default 512)
 }
 
 const defaultRisk: RiskProvider = () => ({ budget_available: 1_000_000, halted: false });
@@ -35,6 +38,8 @@ export class LiveRuntime {
   private readonly now: () => number;
   private readonly risk: RiskProvider;
   private readonly portfolio: PortfolioProvider;
+  private readonly ring: RingBuffer<RecordedFrame>;
+  private frameSeq = 0;
 
   constructor(
     private readonly store: RawStore,
@@ -44,6 +49,7 @@ export class LiveRuntime {
     this.now = opts.now ?? systemNowMs;
     this.risk = opts.risk ?? defaultRisk;
     this.portfolio = opts.portfolio ?? defaultPortfolio;
+    this.ring = new RingBuffer<RecordedFrame>(opts.recordingCapacity ?? 512);
   }
 
   /** One deterministic cycle. Returns the result; events are appended by TradingCore. */
@@ -56,9 +62,31 @@ export class LiveRuntime {
       this.opts.tfMs,
       this.opts.candleCount,
     );
-    const result = this.core.run(snapshot, this.risk(asOf), this.portfolio(asOf));
+    const risk = this.risk(asOf);
+    const portfolio = this.portfolio(asOf);
+    const result = this.core.run(snapshot, risk, portfolio);
     this.last = result;
+    // Recording Sink (I2-2): record a RecordedFrame per decision-producing tick. Replay schema reuse;
+    // no new domain event. Same deterministic tick ⇒ identical frames (Replay == Live).
+    if (result.decision !== null) {
+      this.ring.push({
+        index: this.frameSeq++,
+        correlation_id: `tc-${asOf}`,
+        timestamp_ms: asOf,
+        snapshot,
+        risk,
+        portfolio,
+        signals: result.signals,
+        strategy: result.strategy,
+        decision: result.decision,
+      });
+    }
     return result;
+  }
+
+  /** Recorded frames (bounded, in order) — feeds Replay / presentSession identically to Live. */
+  frames(): RecordedFrame[] {
+    return this.ring.toArray();
   }
 
   start(intervalMs: number): void {

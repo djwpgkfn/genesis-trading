@@ -28,7 +28,10 @@ export type PositionsProvider = (asOfMs: number) => readonly Position[];
  * Runtime adapter: current positions + Risk envelope → PortfolioSnapshot. Portfolio operates ONLY
  * within the Risk budget, so max_exposure = risk available. Deterministic and Point-in-Time.
  */
-export function createPortfolioProvider(source: RiskSource, positions: PositionsProvider): PortfolioProvider {
+export function createPortfolioProvider(
+  source: RiskSource,
+  positions: PositionsProvider,
+): PortfolioProvider {
   return (asOfMs) => ({
     exposure: totalExposure(positions(asOfMs)),
     max_exposure: source.budgetSnapshot().available,
