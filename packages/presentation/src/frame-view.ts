@@ -2,23 +2,11 @@ import { deepFreeze, type FrameInput } from './input-dto.js';
 import { decisionViewModel, type DecisionViewModel } from './viewmodels/decision-vm.js';
 import { signalViewModels, type SignalViewModel } from './viewmodels/signal-vm.js';
 import { strategyViewModel, type StrategyViewModel } from './viewmodels/strategy-vm.js';
-import {
-  explainabilityViewModel,
-  type ExplainabilityViewModel,
-} from './viewmodels/explainability-vm.js';
+import { explainabilityViewModel, type ExplainabilityViewModel } from './viewmodels/explainability-vm.js';
 import { decisionHistory, type DecisionHistoryItem } from './viewmodels/replay-vm.js';
-import {
-  invariantViewModel,
-  type InvariantViewModel,
-  type InvariantReport,
-} from './viewmodels/invariant-vm.js';
+import { invariantViewModel, type InvariantViewModel, type InvariantReport } from './viewmodels/invariant-vm.js';
 
-export interface MarketView {
-  symbol: string;
-  timeframe: string;
-  price: number | null;
-  candle_time: string;
-}
+export interface MarketView { symbol: string; timeframe: string; price: number | null; candle_time: string; last_close?: number | null; candle_count?: number }
 export interface FrameView {
   index: number;
   market: MarketView;
@@ -27,10 +15,7 @@ export interface FrameView {
   decision: DecisionViewModel;
   explainability: ExplainabilityViewModel;
 }
-export interface SessionView {
-  frames: FrameView[];
-  history: DecisionHistoryItem[];
-}
+export interface SessionView { frames: FrameView[]; history: DecisionHistoryItem[] }
 
 /** Pure mapper: a recorded frame → fully display-ready FrameView (no engine at consume time). */
 export function frameView(frame: FrameInput): FrameView {
@@ -42,6 +27,8 @@ export function frameView(frame: FrameInput): FrameView {
       timeframe: '1m',
       price: last ? last.close : null,
       candle_time: new Date(frame.snapshot.timestamp_ms).toISOString(),
+      last_close: last ? last.close : null,
+      candle_count: frame.snapshot.candles.length,
     },
     signals: signalViewModels(frame.signals),
     strategy: strategyViewModel(frame.strategy),
@@ -71,10 +58,7 @@ export interface ExplainabilityDetail {
 }
 
 /** Pure mapper: runtime frame (+ invariant report) → full explainability detail. */
-export function explainabilityDetail(
-  frame: FrameInput,
-  report: InvariantReport,
-): ExplainabilityDetail {
+export function explainabilityDetail(frame: FrameInput, report: InvariantReport): ExplainabilityDetail {
   const base = explainabilityViewModel(frame.decision);
   const inv = invariantViewModel(report);
   const rejected = frame.decision.action === 'HOLD' || frame.decision.action === 'WAIT';
@@ -119,18 +103,9 @@ export function dashboardView(frame: FrameInput, report: InvariantReport): Dashb
 
 /** Runtime → Presentation bridge (#2): recorded frames + invariant report → serializable DTO.
  *  Live and Replay call this SAME function with the SAME ViewModels (#6). */
-export interface DashboardSessionView {
-  frames: DashboardView[];
-  history: DecisionHistoryItem[];
-}
-export function presentSession(
-  frames: readonly FrameInput[],
-  report: InvariantReport,
-): DashboardSessionView {
-  return deepFreeze({
-    frames: frames.map((f) => dashboardView(f, report)),
-    history: decisionHistory(frames),
-  });
+export interface DashboardSessionView { frames: DashboardView[]; history: DecisionHistoryItem[] }
+export function presentSession(frames: readonly FrameInput[], report: InvariantReport): DashboardSessionView {
+  return deepFreeze({ frames: frames.map((f) => dashboardView(f, report)), history: decisionHistory(frames) });
 }
 
 // ── P2: additional views (pure re-shaping of data already on the frame; no indicator math) ──
@@ -161,10 +136,21 @@ export interface RiskView {
 }
 export function riskView(frame: FrameInput): RiskView {
   const halted = frame.risk.halted ?? false;
+  return { budget_available: frame.risk.budget_available, halted, status: halted ? 'HALTED' : 'ACTIVE' };
+}
+
+/** AccountView (I2-4a): read-only account projection = risk summary + portfolio exposure.
+ *  SoT: FrameInput.risk + FrameInput.portfolio (RecordedFrame). No fabricated data; positions out of scope. */
+export interface AccountView {
+  risk: RiskView;
+  portfolio: { exposure: number; max_exposure: number } | null;
+}
+export function accountView(frame: FrameInput): AccountView {
   return {
-    budget_available: frame.risk.budget_available,
-    halted,
-    status: halted ? 'HALTED' : 'ACTIVE',
+    risk: riskView(frame),
+    portfolio: frame.portfolio
+      ? { exposure: frame.portfolio.exposure, max_exposure: frame.portfolio.max_exposure }
+      : null,
   };
 }
 

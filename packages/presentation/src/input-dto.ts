@@ -3,11 +3,7 @@
 export interface DecisionTraceInput {
   readonly action: string;
   readonly confidence: number;
-  readonly steps: ReadonlyArray<{
-    readonly stage: string;
-    readonly detail: string;
-    readonly refs: ReadonlyArray<string>;
-  }>;
+  readonly steps: ReadonlyArray<{ readonly stage: string; readonly detail: string; readonly refs: ReadonlyArray<string> }>;
 }
 export interface DecisionInput {
   readonly id: string;
@@ -46,12 +42,17 @@ export interface RiskInput {
   readonly budget_available: number;
   readonly halted?: boolean;
 }
+export interface PortfolioInput {
+  readonly exposure: number;
+  readonly max_exposure: number;
+}
 /** A single runtime frame as consumed by presentation (matches RecordedFrame structurally). */
 export interface FrameInput {
   readonly index: number;
   readonly timestamp_ms: number;
   readonly snapshot: SnapshotInput;
   readonly risk: RiskInput;
+  readonly portfolio?: PortfolioInput; // I2-4a: additive; RecordedFrame.portfolio fills this structurally
   readonly signals: ReadonlyArray<SignalInput>;
   readonly strategy: StrategyInput;
   readonly decision: DecisionInput;
