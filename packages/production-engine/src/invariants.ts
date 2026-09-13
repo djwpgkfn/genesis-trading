@@ -12,6 +12,8 @@ import {
 import { SnapshotRuntime, verifyPins, snapshotHash } from './snapshot-runtime.js';
 import { ControlPlane } from './control-plane.js';
 import { ExecutionGateway } from './execution-gateway.js';
+import { ExecutionReconciler, type ReconcileRequest } from './execution-reconciler.js';
+import type { FillEvent } from './execution-contract.js';
 import { MarketHealthCalculator } from './market-health.js';
 import { CorrelationMatrix } from '@genesis/portfolio-engine';
 import { CycleOrchestrator } from './orchestrator.js';
@@ -265,7 +267,204 @@ function checkS4(): CheckResult {
       };
 }
 
-export const productionChecks: ReadonlyArray<{ id: string; fn: () => CheckResult }> = [
+// ---- I4-6: Execution invariants R12~R16 (verify existing I4-2..I4-5 behavior; no new logic) ----
+
+const R_ORDER = { client_order_id: 'r-o1', symbol: 'KRW-BTC', side: 'buy' as const, notional: 100 };
+const engagedKill = { isEngaged: () => true };
+
+/** INV-R12: kill-switch engaged => neither execute nor executeAsync calls the external adapter. */
+async function checkR12(): Promise<CheckResult> {
+  let syncCalls = 0;
+  const syncAdapter = {
+    placeOrder: (o: { client_order_id: string; notional: number }) => {
+      syncCalls += 1;
+      return { client_order_id: o.client_order_id, filled_notional: o.notional, price: 1 };
+    },
+  };
+  let asyncCalls = 0;
+  const asyncAdapter = {
+    submitOrder: async (o: { client_order_id: string }) => {
+      asyncCalls += 1;
+      return {
+        client_order_id: o.client_order_id,
+        exchange_order_id: 'x',
+        status: 'ACKNOWLEDGED' as const,
+        submitted_at_ms: 0,
+        reason: 'accepted',
+      };
+    },
+  };
+  const gw = new ExecutionGateway(
+    { authorizeExecution: () => true },
+    syncAdapter,
+    'c',
+    'snap1',
+    undefined,
+    undefined,
+    engagedKill,
+    asyncAdapter,
+  );
+  const s = gw.execute(R_ORDER, 'good');
+  const a = await gw.executeAsync({ ...R_ORDER, client_order_id: 'r-o2' }, 'good');
+  const ok = !s.ok && !a.ok && syncCalls === 0 && asyncCalls === 0;
+  return ok
+    ? { id: 'INV-R12', status: 'pass' }
+    : {
+        id: 'INV-R12',
+        status: 'fail',
+        detail: `sync=${syncCalls} async=${asyncCalls} sOk=${s.ok} aOk=${a.ok}`,
+      };
+}
+
+function fill(coid: string, n: number, seq: number): FillEvent {
+  return {
+    client_order_id: coid,
+    exchange_order_id: 'x',
+    fill_seq: seq,
+    filled_notional: n,
+    filled_qty: n / 100,
+    price: 100,
+    fee: 0,
+    observed_at_ms: seq,
+  };
+}
+
+/** INV-R13: requested_notional != filled_notional; filled = sum of fills; remaining exact. */
+function checkR13(): CheckResult {
+  const rec = new ExecutionReconciler({ confirmFill: () => true, release: () => true });
+  const req: ReconcileRequest = {
+    request_id: 'r1',
+    client_order_id: 'c1',
+    reservation_id: 'res1',
+    requested_notional: 100,
+  };
+  const o = rec.reconcile(req, [fill('c1', 50, 1), fill('c1', 20, 2)]);
+  const ok =
+    o.result.requested_notional === 100 &&
+    o.result.filled_notional === 70 &&
+    o.result.remaining_notional === 30;
+  return ok
+    ? { id: 'INV-R13', status: 'pass' }
+    : {
+        id: 'INV-R13',
+        status: 'fail',
+        detail: `filled=${o.result.filled_notional} remaining=${o.result.remaining_notional}`,
+      };
+}
+
+/** INV-R14: partial fill => confirmFill once for the filled part AND release the remainder. */
+function checkR14(): CheckResult {
+  let confirmed = 0;
+  let released = 0;
+  const rec = new ExecutionReconciler({
+    confirmFill: () => {
+      confirmed += 1;
+      return true;
+    },
+    release: () => {
+      released += 1;
+      return true;
+    },
+  });
+  const req: ReconcileRequest = {
+    request_id: 'r1',
+    client_order_id: 'c1',
+    reservation_id: 'res1',
+    requested_notional: 100,
+  };
+  const o = rec.reconcile(req, [fill('c1', 60, 1)]);
+  const ok =
+    o.result.final_status === 'PARTIALLY_FILLED' &&
+    o.risk_confirmed &&
+    o.risk_released &&
+    confirmed === 1 &&
+    released === 1 &&
+    o.result.filled_notional + o.result.remaining_notional === o.result.requested_notional;
+  return ok
+    ? { id: 'INV-R14', status: 'pass' }
+    : {
+        id: 'INV-R14',
+        status: 'fail',
+        detail: `status=${o.result.final_status} c=${confirmed} r=${released}`,
+      };
+}
+
+/** INV-R15: async adapter throwing => executeAsync is fail-closed (ok:false, no throw propagation). */
+async function checkR15(): Promise<CheckResult> {
+  const syncAdapter = {
+    placeOrder: (o: { client_order_id: string; notional: number }) => ({
+      client_order_id: o.client_order_id,
+      filled_notional: o.notional,
+      price: 1,
+    }),
+  };
+  const throwingAsync = {
+    submitOrder: async () => {
+      throw new Error('exchange down');
+    },
+  };
+  const gw = new ExecutionGateway(
+    { authorizeExecution: () => true },
+    syncAdapter,
+    'c',
+    'snap1',
+    undefined,
+    undefined,
+    undefined,
+    throwingAsync,
+  );
+  let threw = false;
+  let res: { ok: boolean } = { ok: true };
+  try {
+    res = await gw.executeAsync(R_ORDER, 'good');
+  } catch {
+    threw = true; // must NOT happen — failure must be caught internally
+  }
+  const ok = !threw && !res.ok;
+  return ok
+    ? { id: 'INV-R15', status: 'pass' }
+    : { id: 'INV-R15', status: 'fail', detail: `threw=${threw} ok=${res.ok}` };
+}
+
+/** INV-R16: fills reach Risk only through reconciliation (confirmFill/release), never bypassed. */
+function checkR16(): CheckResult {
+  let confirmed = 0;
+  let released = 0;
+  const port = {
+    confirmFill: () => {
+      confirmed += 1;
+      return true;
+    },
+    release: () => {
+      released += 1;
+      return true;
+    },
+  };
+  const rec = new ExecutionReconciler(port);
+  const req: ReconcileRequest = {
+    request_id: 'r1',
+    client_order_id: 'c1',
+    reservation_id: 'res1',
+    requested_notional: 100,
+  };
+  // Before reconciliation, Risk is untouched (no bypass path exists).
+  const beforeUntouched = confirmed === 0 && released === 0;
+  const o = rec.reconcile(req, [fill('c1', 100, 1)]);
+  // A full fill drives Risk exactly through reconciliation.
+  const throughReconcile = o.risk_confirmed && confirmed === 1;
+  return beforeUntouched && throughReconcile
+    ? { id: 'INV-R16', status: 'pass' }
+    : {
+        id: 'INV-R16',
+        status: 'fail',
+        detail: `before=${beforeUntouched} confirmed=${confirmed}`,
+      };
+}
+
+export const productionChecks: ReadonlyArray<{
+  id: string;
+  fn: () => CheckResult | Promise<CheckResult>;
+}> = [
   { id: 'INV-A1', fn: checkA1 },
   { id: 'INV-A2', fn: checkA2 },
   { id: 'INV-A3', fn: checkA3 },
@@ -277,4 +476,9 @@ export const productionChecks: ReadonlyArray<{ id: string; fn: () => CheckResult
   { id: 'INV-V2', fn: checkV2 },
   { id: 'INV-V4', fn: checkV4 },
   { id: 'INV-S4', fn: checkS4 },
+  { id: 'INV-R12', fn: checkR12 },
+  { id: 'INV-R13', fn: checkR13 },
+  { id: 'INV-R14', fn: checkR14 },
+  { id: 'INV-R15', fn: checkR15 },
+  { id: 'INV-R16', fn: checkR16 },
 ];

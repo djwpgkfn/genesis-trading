@@ -56,6 +56,31 @@ export const INVARIANTS: ReadonlyArray<InvariantSpec> = [
     category: 'R',
     statement: 'Replay transport (speed/seek/step) changes only cursor/state, never frame content.',
   },
+  {
+    id: 'INV-R12',
+    category: 'R',
+    statement: 'Kill-switch blocks external submission: engaged => no adapter call (execute/executeAsync).',
+  },
+  {
+    id: 'INV-R13',
+    category: 'R',
+    statement: 'Requested notional is distinct from filled notional (filled = sum of observed fills).',
+  },
+  {
+    id: 'INV-R14',
+    category: 'R',
+    statement: 'Partial fill accounting is consistent: confirm filled, release the unfilled remainder.',
+  },
+  {
+    id: 'INV-R15',
+    category: 'R',
+    statement: 'Exchange submission failure is fail-closed (no throw propagation; result ok:false).',
+  },
+  {
+    id: 'INV-R16',
+    category: 'R',
+    statement: 'Async fills reconcile through Risk (confirmFill/release), never bypassing reconciliation.',
+  },
   { id: 'INV-V1', category: 'V', statement: 'Versions immutable; change = new version.' },
   { id: 'INV-V2', category: 'V', statement: 'Snapshot swapped atomically (no partial swap).' },
   { id: 'INV-V3', category: 'V', statement: 'No production deploy without signed manifest.' },
