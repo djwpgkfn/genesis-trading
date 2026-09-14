@@ -5,6 +5,7 @@ export * from './control-plane.js';
 export * from './execution-gateway.js';
 export * from './execution-contract.js';
 export * from './execution-reconciler.js';
+export * from './simulated-exchange-adapter.js';
 export * from './market-health.js';
 export * from './orchestrator.js';
 export * from './invariants.js';
