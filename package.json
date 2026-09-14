@@ -21,6 +21,7 @@
     "format:check": "prettier --check .",
     "contract:validate": "node tools/contract-validate/dist/index.js",
     "invariant:validate": "node dist/invariant-validate.js",
+    "soak": "node dist/soak-harness.js",
     "ci": "npm run build && npm run lint && npm run format:check && npm run contract:validate && npm run invariant:validate && npm test",
     "fix": "prettier --write . && eslint . --ext .ts --fix",
     "start": "node dist/main.js",
