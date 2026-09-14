@@ -55,6 +55,15 @@ export interface SoakMetrics {
   budget_consistent: boolean;
   scenarios: ScenarioResult[];
   pass: boolean;
+  duration_ms: number;
+  /** Accumulated-mode result: one RiskEngine reused across cycles until budget is exhausted. */
+  accumulated: {
+    cycles_attempted: number;
+    approved: number;
+    rejected_insufficient_budget: number;
+    final: { total: number; reserved: number; consumed: number; available: number };
+    invariant_held: boolean;
+  };
   memory?: { rss: number; heapUsed: number };
 }
 
@@ -177,12 +186,12 @@ export async function runScenario(name: string, fault: Fault, requestId: string)
   const fills: FillEvent[] = buffer.fills(coid);
   const outcome = risk_reconcile(risk, req, fills, rejected);
 
-  // Budget consistency: reserved + consumed <= total (via snapshot).
-  const snap = risk.budgetSnapshot() as { reserved?: number; consumed?: number; total?: number };
+  // Budget consistency (INV-R4): reserved + consumed <= total. RiskBudget.snapshot() returns
+  // { total, reserved, consumed, available } — verified against the real fields, no fallback.
+  const snap = risk.budgetSnapshot();
   const budgetOk =
-    typeof snap.total === 'number'
-      ? (snap.reserved ?? 0) + (snap.consumed ?? 0) <= snap.total + 1e-9
-      : true;
+    snap.reserved + snap.consumed <= snap.total + 1e-9 &&
+    snap.available === snap.total - snap.reserved - snap.consumed;
 
   // Expected outcomes per fault.
   const exp = expectFor(fault, outcome, fakeAdapter.calls, sub.ok, ingested, budgetOk);
@@ -266,10 +275,16 @@ const SCENARIOS: Array<{ name: string; fault: Fault }> = [
 /** Run all scenarios once + a short repeat loop. Aggregates machine-readable metrics. */
 export async function runSoak(cycles = 20): Promise<SoakMetrics> {
   const scenarios: ScenarioResult[] = [];
+  const started = process.hrtime.bigint();
   const m: SoakMetrics = {
     cycles: 0, orders_submitted: 0, submissions_accepted: 0, submissions_rejected: 0,
     fills_applied: 0, duplicates_deduped: 0, confirmFill_count: 0, release_count: 0,
     adapter_calls: 0, exceptions: 0, real_orders: 0, budget_consistent: true, scenarios, pass: true,
+    duration_ms: 0,
+    accumulated: {
+      cycles_attempted: 0, approved: 0, rejected_insufficient_budget: 0,
+      final: { total: 0, reserved: 0, consumed: 0, available: 0 }, invariant_held: true,
+    },
   };
 
   // 1) Each scenario once.
@@ -307,9 +322,57 @@ export async function runSoak(cycles = 20): Promise<SoakMetrics> {
     }
   }
 
+  // 3) Accumulated mode: ONE RiskEngine reused across cycles. Verifies that reservation/consume/
+  //    release accounting stays consistent as budget is drawn down, and that exhaustion is a clean
+  //    rejection (INV-R5) rather than an inconsistency. Full fills consume budget permanently.
+  try {
+    const accRisk = freshRisk();
+    const accCycles = Math.min(cycles, 200); // bounded; budget is finite by design
+    for (let i = 0; i < accCycles; i++) {
+      m.accumulated.cycles_attempted += 1;
+      const rid = `acc-${i}`;
+      const d = accRisk.preTradeCheck(
+        { request_id: rid, symbol: 'KRW-BTC', side: 'buy', notional: 100 },
+        [],
+        EQUITY,
+      );
+      if (!d.approved || !d.token_id || !d.reservation_id) {
+        m.accumulated.rejected_insufficient_budget += 1;
+        continue; // expected once budget is exhausted
+      }
+      m.accumulated.approved += 1;
+      const kill = { isEngaged: () => false };
+      const fake = new FakeAsyncExchangeAdapter('normal');
+      const gw = new ExecutionGateway(accRisk, NOOP_SYNC, 'acc-corr', 'acc-snap', undefined, undefined, kill, fake);
+      const coid = `${rid}-coid`;
+      const sub = await gw.executeAsync({ client_order_id: coid, symbol: 'KRW-BTC', side: 'buy', notional: 100 }, d.token_id);
+      if (!sub.ok) continue;
+      const buf = new MyOrderFillBuffer();
+      buf.ingest(myOrderMsg(coid, `x-${coid}`, `t-${i}`, 100, 1));
+      risk_reconcile(
+        accRisk,
+        { request_id: rid, client_order_id: coid, reservation_id: d.reservation_id, requested_notional: 100 },
+        buf.fills(coid),
+        false,
+      );
+      const s2 = accRisk.budgetSnapshot();
+      if (!(s2.reserved + s2.consumed <= s2.total + 1e-9)) {
+        m.accumulated.invariant_held = false;
+        m.pass = false;
+        break;
+      }
+    }
+    m.accumulated.final = accRisk.budgetSnapshot();
+  } catch {
+    m.exceptions += 1;
+    m.pass = false;
+  }
+
   if (m.real_orders !== 0) m.pass = false; // structural guarantee
   if (m.exceptions !== 0) m.pass = false;
+  if (!m.accumulated.invariant_held) m.pass = false;
 
+  m.duration_ms = Number((process.hrtime.bigint() - started) / 1_000_000n);
   const mu = process.memoryUsage();
   m.memory = { rss: mu.rss, heapUsed: mu.heapUsed };
   return m;

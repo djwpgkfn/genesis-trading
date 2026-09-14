@@ -46,8 +46,17 @@ describe('I4-7A-1: dry-run soak harness (real path, fake exchange only)', () => 
 
   it('metrics object is machine-readable with required fields', async () => {
     const m = await runSoak(5);
-    for (const k of ['cycles', 'orders_submitted', 'confirmFill_count', 'release_count', 'adapter_calls', 'exceptions', 'real_orders', 'budget_consistent', 'pass']) {
+    for (const k of ['cycles', 'orders_submitted', 'confirmFill_count', 'release_count', 'adapter_calls', 'exceptions', 'real_orders', 'budget_consistent', 'pass', 'duration_ms', 'accumulated']) {
       expect(m).toHaveProperty(k);
     }
+  });
+
+  it('accumulated mode keeps the Risk budget invariant (reserved + consumed <= total)', async () => {
+    const m = await runSoak(10);
+    const acc = m.accumulated;
+    expect(acc.invariant_held).toBe(true);
+    expect(acc.cycles_attempted).toBeGreaterThan(0);
+    expect(acc.final.reserved + acc.final.consumed).toBeLessThanOrEqual(acc.final.total + 1e-9);
+    expect(acc.final.available).toBe(acc.final.total - acc.final.reserved - acc.final.consumed);
   });
 });
