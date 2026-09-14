@@ -352,7 +352,7 @@ function checkR13(): CheckResult {
       };
 }
 
-/** INV-R14: partial fill => confirmFill once for the filled part AND release the remainder. */
+/** INV-R14: partial fill => confirmFill once; the reservation STAYS consumed (no remainder release). */
 function checkR14(): CheckResult {
   let confirmed = 0;
   let released = 0;
@@ -376,9 +376,9 @@ function checkR14(): CheckResult {
   const ok =
     o.result.final_status === 'PARTIALLY_FILLED' &&
     o.risk_confirmed &&
-    o.risk_released &&
+    !o.risk_released &&
     confirmed === 1 &&
-    released === 1 &&
+    released === 0 && // conservative: filled risk is NOT erased from the budget
     o.result.filled_notional + o.result.remaining_notional === o.result.requested_notional;
   return ok
     ? { id: 'INV-R14', status: 'pass' }

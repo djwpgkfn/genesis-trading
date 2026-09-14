@@ -237,8 +237,9 @@ function expectFor(
       return outcome.status === 'FILLED' && outcome.confirmed === 1 && adapterCalls === 1
         ? { pass: true, detail: 'FILLED, confirmFill' } : fail(`normal: status=${outcome.status} c=${outcome.confirmed} calls=${adapterCalls}`);
     case 'partial':
-      return outcome.status === 'PARTIALLY_FILLED' && outcome.confirmed === 1 && outcome.released === 1
-        ? { pass: true, detail: 'PARTIALLY_FILLED, confirm+release' } : fail(`partial: status=${outcome.status} c=${outcome.confirmed} r=${outcome.released}`);
+      // Conservative interim model: the filled reservation stays consumed; no remainder release.
+      return outcome.status === 'PARTIALLY_FILLED' && outcome.confirmed === 1 && outcome.released === 0
+        ? { pass: true, detail: 'PARTIALLY_FILLED, confirm only (remainder not released)' } : fail(`partial: status=${outcome.status} c=${outcome.confirmed} r=${outcome.released}`);
     case 'multi':
       return outcome.status === 'FILLED' && ingested === 3 && outcome.confirmed === 1
         ? { pass: true, detail: 'multi-fill accrued to FILLED' } : fail(`multi: status=${outcome.status} ingested=${ingested}`);
@@ -348,7 +349,9 @@ export async function runSoak(cycles = 20): Promise<SoakMetrics> {
       const sub = await gw.executeAsync({ client_order_id: coid, symbol: 'KRW-BTC', side: 'buy', notional: 100 }, d.token_id);
       if (!sub.ok) continue;
       const buf = new MyOrderFillBuffer();
-      buf.ingest(myOrderMsg(coid, `x-${coid}`, `t-${i}`, 100, 1));
+      // Alternate full (100) and partial (60) fills so the accumulated budget path covers both.
+      const fillAmt = i % 2 === 0 ? 100 : 60;
+      buf.ingest(myOrderMsg(coid, `x-${coid}`, `t-${i}`, fillAmt, 1));
       risk_reconcile(
         accRisk,
         { request_id: rid, client_order_id: coid, reservation_id: d.reservation_id, requested_notional: 100 },

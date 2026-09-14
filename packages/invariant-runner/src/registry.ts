@@ -69,7 +69,7 @@ export const INVARIANTS: ReadonlyArray<InvariantSpec> = [
   {
     id: 'INV-R14',
     category: 'R',
-    statement: 'Partial fill accounting is consistent: confirm filled, release the unfilled remainder.',
+    statement: 'Partial fill accounting is conservative: the filled reservation stays consumed (no remainder release).',
   },
   {
     id: 'INV-R15',

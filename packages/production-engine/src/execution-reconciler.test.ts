@@ -21,7 +21,9 @@ describe('I4-3: Execution reconciliation', () => {
     expect(risk.release).not.toHaveBeenCalled();
   });
 
-  it('requested > filled → PARTIALLY_FILLED, confirmFill + release remainder', () => {
+  // I4-7A follow-up (conservative interim model): a partial fill KEEPS the reservation consumed.
+  // release() would subtract the whole reservation from `consumed`, erasing the filled risk.
+  it('requested > filled → PARTIALLY_FILLED, confirmFill only (remainder NOT released)', () => {
     const risk = riskPort();
     const o = new ExecutionReconciler(risk).reconcile(REQ, [fill(50_000, 1), fill(20_000, 2)]);
     expect(o.result.final_status).toBe('PARTIALLY_FILLED');
@@ -29,7 +31,9 @@ describe('I4-3: Execution reconciliation', () => {
     expect(o.result.remaining_notional).toBe(30_000);
     expect(o.result.fill_count).toBe(2);
     expect(risk.confirmFill).toHaveBeenCalledWith('res1');
-    expect(risk.release).toHaveBeenCalledWith('res1'); // remainder released
+    expect(risk.release).not.toHaveBeenCalled(); // conservative: filled risk stays in budget
+    expect(o.risk_confirmed).toBe(true);
+    expect(o.risk_released).toBe(false);
   });
 
   it('filled == 0 → CANCELLED, release only (nothing consumed)', () => {
@@ -58,7 +62,7 @@ describe('I4-3: Execution reconciliation', () => {
     expect(second.duplicate).toBe(true);
     expect(second.result).toEqual(first.result);
     expect(risk.confirmFill).toHaveBeenCalledTimes(1); // not doubled
-    expect(risk.release).toHaveBeenCalledTimes(1); // remainder released once only
+    expect(risk.release).not.toHaveBeenCalled(); // partial keeps the reservation consumed
     expect(rec.isSettled('c1')).toBe(true);
   });
 

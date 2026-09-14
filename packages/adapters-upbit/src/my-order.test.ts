@@ -106,7 +106,7 @@ describe('I4-5: buffer → ExecutionReconciler → Risk confirmFill/release', ()
   }
   const REQ: ReconcileRequest = { request_id: 'r1', client_order_id: 'c1', reservation_id: 'res1', requested_notional: 100_000 };
 
-  it('partial fills from buffer drive confirmFill + release remainder', () => {
+  it('partial fills from buffer drive confirmFill; remainder is NOT released (conservative)', () => {
     const buf = new MyOrderFillBuffer();
     buf.ingest(msg({ trade_uuid: 't1', executed_funds: 50_000, trades_count: 1 }));
     buf.ingest(msg({ trade_uuid: 't2', executed_funds: 20_000, trades_count: 2 }));
@@ -116,7 +116,7 @@ describe('I4-5: buffer → ExecutionReconciler → Risk confirmFill/release', ()
     expect(o.result.filled_notional).toBe(70_000);
     expect(o.result.remaining_notional).toBe(30_000);
     expect(risk.confirmFill).toHaveBeenCalledWith('res1');
-    expect(risk.release).toHaveBeenCalledWith('res1');
+    expect(risk.release).not.toHaveBeenCalled();
   });
 
   it('full fill from buffer → FILLED, confirmFill only', () => {
