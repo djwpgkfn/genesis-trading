@@ -1,0 +1,24 @@
+{
+  "name": "@genesis/paper",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@genesis/contracts": "*",
+    "@genesis/data-layer": "*",
+    "@genesis/signal-engine": "*",
+    "@genesis/strategy-engine": "*",
+    "@genesis/decision-engine": "*",
+    "@genesis/risk-engine": "*",
+    "@genesis/production-engine": "*",
+    "@genesis/adapters-upbit": "*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.12"
+  }
+}
