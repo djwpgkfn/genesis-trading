@@ -4,3 +4,5 @@ export * from './portfolio.js';
 export * from './market-fixture.js';
 export * from './fake-ws.js';
 export * from './pipeline.js';
+export * from './candle-bridge.js';
+export * from './live-run.js';
